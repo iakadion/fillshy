@@ -319,6 +319,7 @@ setError(err instanceof Error ? err.message : "An unknown error occurred.");
                                 onGenerate={() => handleGenerateAndSave()}
                                 isGenerating={isGenerating}
                                 isAutonomous={isAutonomous}
+                                onContentSelect={(item) => handleContentSelect(item, selectedCategory!)}
                             />
                         </main>
                     </div>

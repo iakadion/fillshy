@@ -14,6 +14,7 @@ interface ContentDisplayProps {
     onGenerate: () => Promise<void>;
     isGenerating: boolean;
     isAutonomous: boolean;
+    onContentSelect: (item: ContentItem) => void;
 }
 
 const WelcomeMessage: React.FC<{ onOpenGithubModal: () => void, githubConnected: boolean }> = ({ onOpenGithubModal, githubConnected }) => {
@@ -78,7 +79,7 @@ const GenerateButton: React.FC<{ onGenerate: () => void, isGenerating: boolean, 
 };
 
 
-const ContentDisplay: React.FC<ContentDisplayProps> = ({ category, content, isLoading, error, githubConfig, onOpenGithubModal, onGenerate, isGenerating, isAutonomous }) => {
+const ContentDisplay: React.FC<ContentDisplayProps> = ({ category, content, isLoading, error, githubConfig, onOpenGithubModal, onGenerate, isGenerating, isAutonomous, onContentSelect }) => {
     const { t } = useTranslations();
     
     if (!category) {
@@ -127,6 +128,7 @@ const ContentDisplay: React.FC<ContentDisplayProps> = ({ category, content, isLo
                         item={item} 
                         isAscii={category?.id === 'ascii'} 
                         index={index}
+                        onClick={() => onContentSelect(item)}
                     />
                 ))}
             </div>
