@@ -59,65 +59,108 @@
       .scrollbar-hide::-webkit-scrollbar { display: none; }
     </style>
 
-    <!-- PASSO 1: AS FERRAMENTAS ESSENCIAIS -->
-    <!-- SystemJS - O carregador de módulos inteligente -->
-    <script src="https://cdn.jsdelivr.net/npm/systemjs/dist/s.min.js"></script>
-    <!-- Plugin do Babel para o SystemJS -->
-    <script src="https://cdn.jsdelivr.net/npm/systemjs-plugin-babel/dist/plugin-babel.min.js"></script>
-    <!-- Babel Standalone - O transpilador que converte TSX para JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+    <!-- PASSO 1: Incluir o Babel Standalone. É a única ferramenta externa de transpilação que precisamos. -->
+    <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
 
+    <!-- PASSO 2: Import Map para dependências externas. Limpo e direto. -->
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client"
+      }
+    }
+    </script>
 </head>
 <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
     <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
     <div id="root"></div>
 
-    <!-- PASSO 2: A CONFIGURAÇÃO (O CÉREBRO DA OPERAÇÃO) -->
-    <script>
-        // Informa ao SystemJS qual instância do Babel usar
-        System.set('plugin-babel', System.newModule({ 'default': window.Babel, __useDefault: true }));
+    <!-- PASSO 3: O Script Inteligente que Orquestra Tudo -->
+    <script type="module">
+        // Cache para não buscar e transpilar o mesmo arquivo repetidamente.
+        const fileCache = new Map();
 
-        // Configuração principal do SystemJS
-        System.config({
-            // 1. Mapeamento de dependências (o "Import Map" do SystemJS)
-            map: {
-                'react': 'https://esm.sh/react@18.3.1',
-                'react-dom/client': 'https://esm.sh/react-dom@18.3.1/client',
-                // Mapeia o plugin de transpilação
-                'plugin-babel': 'https://cdn.jsdelivr.net/npm/systemjs-plugin-babel/dist/plugin-babel.min.js'
-            },
-            // 2. Transpilador: Diz ao SystemJS para usar o Babel
-            transpiler: 'plugin-babel',
-            
-            // 3. Regras (A MÁGICA ACONTECE AQUI)
-            meta: {
-                // Para qualquer arquivo que termine com .js, .ts, ou .tsx...
-                '*.{js,ts,tsx}': {
-                    // ...use o transpilador Babel com estas opções:
-                    babelOptions: {
-                        // Presets essenciais para entender React e TypeScript
-                        react: true,
-                        typescript: true
-                    }
-                }
+        /**
+         * Resolve e carrega um módulo, seguindo a hierarquia.
+         * Esta é a função central que executa o processo que você descreveu.
+         * @param {string} specifier - O que está sendo importado (ex: 'react', './App', './components/Sidebar').
+         * @param {string} parentUrl - A URL do arquivo que está fazendo o import.
+         */
+        async function loadModule(specifier, parentUrl) {
+            // 1. Resolve o caminho do arquivo
+            let url;
+            // Se NÃO for um caminho relativo, é uma lib externa (ex: 'react'). Deixa o import-map resolver.
+            if (!specifier.startsWith('.') && !specifier.startsWith('/')) {
+                return import(specifier);
             }
-        });
+            // Se for um caminho relativo, calcula a URL completa.
+            url = new URL(specifier, parentUrl).href;
 
-        // PASSO 3: A EXECUÇÃO
-        // Ponto de entrada: Manda o SystemJS importar o seu arquivo principal.
-        // Ele vai automaticamente "mirar", baixar, transpilar e resolver todas as dependências.
-        System.import('/index.tsx')
-          .then(function() {
-            console.log('Aplicação iniciada com sucesso pelo SystemJS!');
-          })
-          .catch(function(err) {
-            console.error('Erro ao inicializar a aplicação:', err);
-            // Mostra um erro amigável na tela se algo der errado
-            document.getElementById('root').innerHTML = `
-              <div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;">
-                  <h2>Erro na Aplicação</h2><p>${err.message}</p><pre>${err.stack}</pre>
-              </div>`;
-          });
+            // Tenta adicionar extensões se não houver. Isso é CRUCIAL.
+            const potentialUrls = [url, `${url}.ts`, `${url}.tsx`, `${url}/index.ts`, `${url}/index.tsx`];
+            
+            let sourceCode;
+            let finalUrl;
+
+            // 2. BAIXAR: Tenta buscar o arquivo em uma das possíveis URLs.
+            for (const potentialUrl of potentialUrls) {
+                if (fileCache.has(potentialUrl)) {
+                    // Se já estiver em cache, usa o Blob URL diretamente.
+                    const cachedBlobUrl = fileCache.get(potentialUrl);
+                    return import(cachedBlobUrl);
+                }
+                try {
+                    const response = await fetch(potentialUrl);
+                    if (response.ok) {
+                        sourceCode = await response.text();
+                        finalUrl = potentialUrl;
+                        break;
+                    }
+                } catch (e) { /* Ignora e tenta a próxima URL */ }
+            }
+
+            if (!sourceCode) {
+                throw new Error(`Módulo não encontrado: "${specifier}" a partir de ${parentUrl}`);
+            }
+
+            // 3. ENVIAR AO TRANSPILADOR (Babel)
+            // Substitui todos os `import from './path'` por `import from await loadModule('./path', ...)`
+            // Isso transforma a cadeia de imports em uma cadeia de chamadas assíncronas para esta mesma função.
+            const transformedImportsCode = sourceCode.replace(
+                /import\s+(.*?)\s+from\s+['"](.*?)['"];/g,
+                `import $1 from await loadModule("$2", "${finalUrl}");`
+            );
+            
+            // Transpila o código com a sintaxe de import modificada.
+            const { code } = Babel.transform(transformedImportsCode, {
+                presets: ['react', 'typescript'],
+                filename: finalUrl, // Essencial para o Babel saber que é um .tsx e para erros mais claros
+            });
+
+            // 4. CRIAR O BLOB NAVEGÁVEL
+            // O código agora é JavaScript puro. Criamos um Blob e uma URL para ele.
+            const blob = new Blob([code], { type: 'application/javascript' });
+            const blobUrl = URL.createObjectURL(blob);
+            
+            fileCache.set(finalUrl, blobUrl); // Guarda no cache para futuros imports
+
+            // 5. EXECUTAR
+            // Importa o módulo a partir da URL do Blob, que o navegador entende perfeitamente.
+            return import(blobUrl);
+        }
+
+        // --- PONTO DE ENTRADA DA APLICAÇÃO ---
+        try {
+            console.log('Iniciando carregamento da aplicação...');
+            // Mira no /index.tsx e inicia todo o processo recursivo.
+            await loadModule('/index.tsx', window.location.href);
+            console.log('Aplicação carregada com sucesso!');
+        } catch (error) {
+            console.error('Falha ao inicializar a aplicação:', error);
+            const rootEl = document.getElementById('root');
+            rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p><pre>${error.stack}</pre></div>`;
+        }
     </script>
 </body>
 </html>
