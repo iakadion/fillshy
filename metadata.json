@@ -1,0 +1,5 @@
+{
+  "name": "fillshy - Autonomous AI Content Pipeline",
+  "description": "An advanced web application that leverages the Gemini API for 24/7 autonomous content generation across various categories, saving directly to a GitHub repository. Features a modern, responsive interface with real-time status monitoring.",
+  "requestFramePermissions": []
+}

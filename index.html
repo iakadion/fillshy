@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0B071A" />
+    
+    <!-- SEO and Social Sharing Meta Tags -->
+    <title>fillshy - Autonomous AI Content Pipeline</title>
+    <meta
+      name="description"
+      content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository."
+    />
+    <link rel="canonical" href="/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="/" />
+    <meta property="og:title" content="fillshy - Autonomous AI Content Pipeline" />
+    <meta property="og:description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="/" />
+    <meta property="twitter:title" content="fillshy - Autonomous AI Content Pipeline" />
+    <meta property="twitter:description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "react/": "https://aistudiocdn.com/react@^19.2.0/",
+          "react": "https://aistudiocdn.com/react@^19.2.0",
+          "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1",
+          "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+        }
+      }
+    </script>
+    <style>
+      html {
+        overflow-y: scroll;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      h1, h2, h3, h4, h5, h6, .font-heading {
+        font-family: 'Sora', sans-serif;
+      }
+      @keyframes reveal-word {
+          from {
+              opacity: 0;
+              transform: translateY(10px);
+          }
+          to {
+              opacity: 1;
+              transform: translateY(0);
+          }
+      }
+      .reveal-word {
+          display: inline-block;
+          opacity: 0;
+          animation: reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+      }
+    </style>
+</head>
+  <body class="bg-[#0B071A] text-[#E0DDF0]">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
