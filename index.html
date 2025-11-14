@@ -1,35 +1,67 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
   <head>
+    <!-- Básico -->
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>fillshy - Autonomous AI Content Pipeline</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0B071A" />
-    
-    <!-- SEO and Social Sharing Meta Tags -->
-    <title>fillshy - Autonomous AI Content Pipeline</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- SEO principal -->
     <meta
       name="description"
       content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository."
     />
     <link rel="canonical" href="./" />
 
+    <!-- SEO extra -->
+    <meta name="robots" content="index, follow" />
+    <meta
+      name="keywords"
+      content="AI, conteúdo automático, pipeline de conteúdo, GitHub, automação, geração de conteúdo, inteligência artificial"
+    />
+    <meta name="author" content="fillshy" />
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="./" />
     <meta property="og:title" content="fillshy - Autonomous AI Content Pipeline" />
-    <meta property="og:description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
-    
+    <meta
+      property="og:description"
+      content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository."
+    />
+    <!-- Opcional: se tiver imagem, substitua /og-image.png -->
+    <meta property="og:image" content="./og-image.png" />
+
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="./" />
     <meta property="twitter:title" content="fillshy - Autonomous AI Content Pipeline" />
-    <meta property="twitter:description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
+    <meta
+      property="twitter:description"
+      content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository."
+    />
+    <!-- Opcional: se tiver imagem, substitua /og-image.png -->
+    <meta property="twitter:image" content="./og-image.png" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" rel="stylesheet">
-    
+    <!-- Acessibilidade / UX -->
+    <meta name="color-scheme" content="dark light" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- Fontes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -41,8 +73,8 @@
             },
             keyframes: {
               'reveal-word': {
-                'from': { opacity: '0', transform: 'translateY(10px)' },
-                'to': { opacity: '1', transform: 'translateY(0)' },
+                from: { opacity: '0', transform: 'translateY(10px)' },
+                to: { opacity: '1', transform: 'translateY(0)' },
               },
               'letter-reveal': {
                 '0%': { opacity: 0, transform: 'translateY(20px) scale(0.8)' },
@@ -63,23 +95,28 @@
                 '100%': { transform: 'translate(0px, 0px) scale(1)' },
               },
               'fade-in': {
-                'from': { opacity: 0 },
-                'to': { opacity: 1 },
+                from: { opacity: 0 },
+                to: { opacity: 1 },
               },
             },
             animation: {
-              'reveal-word': 'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-              'letter-reveal': 'letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-              'logo-bar-1': 'logo-bar-1 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-              'logo-bar-2': 'logo-bar-2 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-              'blob': 'blob-animation 20s infinite ease-in-out',
+              'reveal-word':
+                'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+              'letter-reveal':
+                'letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+              'logo-bar-1':
+                'logo-bar-1 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+              'logo-bar-2':
+                'logo-bar-2 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+              blob: 'blob-animation 20s infinite ease-in-out',
               'fade-in': 'fade-in 0.3s ease-in-out',
-            }
-          }
-        }
-      }
+            },
+          },
+        },
+      };
     </script>
 
+    <!-- Estilos customizados -->
     <style>
       html {
         overflow-y: auto;
@@ -92,22 +129,91 @@
         display: none; /* Safari and Chrome */
       }
     </style>
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1",
-    "vite": "https://aistudiocdn.com/vite@^7.2.2",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
-  }
-}
-</script>
-</head>
+
+    <!-- Import Map (mantido) -->
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://aistudiocdn.com/react@^19.2.0",
+          "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+          "react/": "https://aistudiocdn.com/react@^19.2.0/",
+          "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1",
+          "vite": "https://aistudiocdn.com/vite@^7.2.2",
+          "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
+        }
+      }
+    </script>
+
+    <!-- Babel standalone para transpilar TS/TSX no browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Preset TypeScript + React -->
+    <script>
+      Babel.registerPreset('ts-react', {
+        presets: [
+          [Babel.availablePresets['typescript'], { allExtensions: true, isTSX: true }],
+          [Babel.availablePresets['react'], { runtime: 'automatic' }]
+        ]
+      });
+    </script>
+  </head>
+
   <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>Você precisa habilitar JavaScript para executar este app.</noscript>
     <div id="root"></div>
+
+    <!-- 
+      Loader principal:
+      1. Busca /index.tsx
+      2. Transpila com Babel (TSX + React)
+      3. Cria Blob
+      4. Importa o módulo gerado
+    -->
+    <script type="module">
+      const ENTRY_TSX_PATH = '/index.tsx'; // mude aqui se o caminho do TSX for outro
+
+      async function loadAndTranspileTSX(entryPath) {
+        try {
+          const res = await fetch(entryPath);
+          if (!res.ok) {
+            throw new Error(`Não foi possível carregar ${entryPath}: ${res.status} ${res.statusText}`);
+          }
+
+          const tsxCode = await res.text();
+
+          const transpiled = Babel.transform(tsxCode, {
+            filename: entryPath,
+            presets: ['ts-react'],
+            sourceMaps: 'inline',
+            plugins: [],
+          });
+
+          const blob = new Blob([transpiled.code], { type: 'text/javascript' });
+          const moduleUrl = URL.createObjectURL(blob);
+
+          // Importa o módulo gerado. É esperado que o index.tsx faça o bootstrap do app
+          // (por exemplo, usando ReactDOM.createRoot(...).render(...)).
+          await import(moduleUrl);
+
+          // URL.revokeObjectURL(moduleUrl); // se quiser liberar a URL depois
+        } catch (error) {
+          console.error('Erro ao carregar/transpilar TSX:', error);
+          const root = document.getElementById('root');
+          if (root) {
+            root.innerHTML = `
+              <div style="padding:16px;color:#fca5a5;font-family:system-ui, sans-serif;">
+                <h1 style="font-size:18px;font-weight:700;margin-bottom:8px;">Erro ao inicializar a aplicação</h1>
+                <pre style="white-space:pre-wrap;font-size:14px;">${String(error)}</pre>
+              </div>
+            `;
+          }
+        }
+      }
+
+      loadAndTranspileTSX(ENTRY_TSX_PATH);
+    </script>
+
+    <!-- Mantido, mas agora o carregamento real é feito pelo script acima.
+         Se quiser, o index.tsx pode ser um módulo puro TSX (sem Babel in-page). -->
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
