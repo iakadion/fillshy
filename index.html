@@ -1,43 +1,78 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0B071A" />
     
-    <!-- SEO and Social Sharing Meta Tags (Mantidos e Otimizados) -->
+    <!-- SEO and Social Sharing Meta Tags -->
     <title>fillshy - Autonomous AI Content Pipeline</title>
-    <meta name="description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
+    <meta
+      name="description"
+      content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository."
+    />
     <link rel="canonical" href="./" />
+
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="./" />
     <meta property="og:title" content="fillshy - Autonomous AI Content Pipeline" />
     <meta property="og:description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
+    <meta property="og:image" content="/social-preview.png" />
+
+    <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="./" />
     <meta property="twitter:title" content="fillshy - Autonomous AI Content Pipeline" />
     <meta property="twitter:description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
+    <meta property="twitter:image" content="/social-preview.png" />
 
-    <!-- Fonts -->
+    <!-- SEO extra -->
+    <meta name="keywords" content="fillshy, AI, autonomous, content pipeline, GitHub, automation" />
+    <meta name="author" content="fillshy" />
+    <meta name="robots" content="index,follow" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS (via CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         theme: {
           extend: {
-            fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Sora', 'sans-serif'] },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              heading: ['Sora', 'sans-serif'],
+            },
             keyframes: {
-              'reveal-word': { 'from': { opacity: '0', transform: 'translateY(10px)' }, 'to': { opacity: '1', transform: 'translateY(0)' } },
-              'letter-reveal': { '0%': { opacity: 0, transform: 'translateY(20px) scale(0.8)' }, '100%': { opacity: 1, transform: 'translateY(0) scale(1)' } },
-              'logo-bar-1': { '0%': { transform: 'translateY(-40px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } },
-              'logo-bar-2': { '0%': { transform: 'translateY(40px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } },
-              'blob-animation': { '0%': { transform: 'translate(0px, 0px) scale(1)' }, '33%': { transform: 'translate(30px, -50px) scale(1.1)' }, '66%': { transform: 'translate(-20px, 20px) scale(0.9)' }, '100%': { transform: 'translate(0px, 0px) scale(1)' } },
-              'fade-in': { 'from': { opacity: 0 }, 'to': { opacity: 1 } },
+              'reveal-word': {
+                'from': { opacity: '0', transform: 'translateY(10px)' },
+                'to': { opacity: '1', transform: 'translateY(0)' },
+              },
+              'letter-reveal': {
+                '0%': { opacity: 0, transform: 'translateY(20px) scale(0.8)' },
+                '100%': { opacity: 1, transform: 'translateY(0) scale(1)' },
+              },
+              'logo-bar-1': {
+                '0%': { transform: 'translateY(-40px)', opacity: 0 },
+                '100%': { transform: 'translateY(0)', opacity: 1 },
+              },
+              'logo-bar-2': {
+                '0%': { transform: 'translateY(40px)', opacity: 0 },
+                '100%': { transform: 'translateY(0)', opacity: 1 },
+              },
+              'blob-animation': {
+                '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                '100%': { transform: 'translate(0px, 0px) scale(1)' },
+              },
+              'fade-in': {
+                'from': { opacity: 0 },
+                'to': { opacity: 1 },
+              },
             },
             animation: {
               'reveal-word': 'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
@@ -52,115 +87,151 @@
       }
     </script>
 
-    <!-- Custom Styles -->
     <style>
-      html { overflow-y: auto; }
-      .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      .scrollbar-hide::-webkit-scrollbar { display: none; }
+      html {
+        overflow-y: auto;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none; /* Safari and Chrome */
+      }
     </style>
 
-    <!-- PASSO 1: Incluir o Babel Standalone. É a única ferramenta externa de transpilação que precisamos. -->
-    <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
-
-    <!-- PASSO 2: Import Map para dependências externas. Limpo e direto. -->
+    <!-- Importmap: versões esm.sh (funcionando) + suas entradas originais -->
     <script type="importmap">
     {
       "imports": {
-        "react": "https://esm.sh/react@18.2.0",
-        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client"
+        "react": "https://esm.sh/react@18.3.1?dev",
+        "react-dom": "https://esm.sh/react-dom@18.3.1?dev",
+        "react-dom/client": "https://esm.sh/react-dom@18.3.1/client?dev",
+        "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime?dev",
+
+        "react": "https://aistudiocdn.com/react@^19.2.0",
+        "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+        "react/": "https://aistudiocdn.com/react@^19.2.0/",
+        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1",
+        "vite": "https://aistudiocdn.com/vite@^7.2.2",
+        "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
       }
     }
     </script>
-</head>
-<body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
-    <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
+
+    <!-- SystemJS -->
+    <script src="https://cdn.jsdelivr.net/npm/systemjs@6.15.1/dist/system.min.js" crossorigin="anonymous"></script>
+
+    <!-- Babel Standalone -->
+    <script src="https://unpkg.com/@babel/standalone@7.26.0/babel.min.js" crossorigin="anonymous"></script>
+
+    <!-- Config Babel TS/TSX + React -->
+    <script>
+      window.BABEL_TSX_OPTIONS = {
+        presets: [
+          ["typescript", { allExtensions: true, isTSX: true }],
+          ["react", { runtime: "automatic", importSource: "react" }]
+        ],
+        sourceMaps: "inline"
+      };
+    </script>
+
+    <!-- Bootloader: baixa /index.tsx, transpila TS/TSX, segue todos imports relativos e cria Blobs -->
+    <script type="module">
+      const ENTRY_TSX = "/index.tsx";
+      const blobCache = new Map(); // moduleUrl -> blobUrl
+
+      function transpile(source, url) {
+        const { code } = Babel.transform(source, {
+          ...window.BABEL_TSX_OPTIONS,
+          filename: url
+        });
+        return code;
+      }
+
+      function createBlobUrl(code) {
+        const blob = new Blob([code], { type: "application/javascript" });
+        return URL.createObjectURL(blob);
+      }
+
+      function resolveRelative(parentUrl, specifier) {
+        return new URL(specifier, parentUrl).toString();
+      }
+
+      async function getBlobForModule(moduleUrl) {
+        if (blobCache.has(moduleUrl)) return blobCache.get(moduleUrl);
+
+        const res = await fetch(moduleUrl);
+        if (!res.ok) {
+          throw new Error(`Falha ao carregar módulo: ${moduleUrl} (${res.status})`);
+        }
+        const source = await res.text();
+
+        let jsCode = source;
+        if (moduleUrl.endsWith(".ts") || moduleUrl.endsWith(".tsx")) {
+          jsCode = transpile(source, moduleUrl);
+        }
+
+        const blobUrl = createBlobUrl(jsCode);
+        blobCache.set(moduleUrl, blobUrl);
+        return blobUrl;
+      }
+
+      // Resolve imports relativos (./App, ../foo) e absolutos ("/...")
+      const origResolve = SystemJS.resolve;
+      SystemJS.resolve = function(specifier, parentUrl) {
+        if (specifier.startsWith("./") || specifier.startsWith("../")) {
+          const resolved = resolveRelative(parentUrl, specifier);
+          if (!/\.(js|ts|tsx)$/.test(resolved)) {
+            return resolved + ".tsx"; // assume .tsx se não tiver extensão
+          }
+          return resolved;
+        }
+        if (specifier.startsWith("/")) {
+          return specifier;
+        }
+        if (origResolve) return origResolve(specifier, parentUrl);
+        return specifier;
+      };
+
+      const origFetch = SystemJS.fetch || fetch.bind(window);
+      SystemJS.fetch = async function(url, options) {
+        const isLocalTs = url.endsWith(".ts") || url.endsWith(".tsx");
+        const isLocalJs = url.startsWith("/") && url.endsWith(".js");
+
+        if (isLocalTs || isLocalJs) {
+          const blobUrl = await getBlobForModule(url);
+          return origFetch(blobUrl, options);
+        }
+
+        return origFetch(url, options);
+      };
+
+      (async function bootstrap() {
+        try {
+          const entryUrl = new URL(ENTRY_TSX, window.location.origin).toString();
+          const entryBlob = await getBlobForModule(entryUrl);
+          await System.import(entryBlob);
+        } catch (err) {
+          console.error("Erro ao inicializar a aplicação", err);
+          const root = document.getElementById("root");
+          if (root) {
+            root.innerHTML = `
+              <div style="padding:16px;color:#f97373;font-family:monospace;">
+                Erro ao inicializar a aplicação:<br/>
+                <pre>${String(err)}</pre>
+              </div>
+            `;
+          }
+        }
+      })();
+    </script>
+  </head>
+  <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
 
-    <!-- PASSO 3: O Script Inteligente que Orquestra Tudo -->
-    <script type="module">
-        // Cache para não buscar e transpilar o mesmo arquivo repetidamente.
-        const fileCache = new Map();
-
-        /**
-         * Resolve e carrega um módulo, seguindo a hierarquia.
-         * Esta é a função central que executa o processo que você descreveu.
-         * @param {string} specifier - O que está sendo importado (ex: 'react', './App', './components/Sidebar').
-         * @param {string} parentUrl - A URL do arquivo que está fazendo o import.
-         */
-        async function loadModule(specifier, parentUrl) {
-            // 1. Resolve o caminho do arquivo
-            let url;
-            // Se NÃO for um caminho relativo, é uma lib externa (ex: 'react'). Deixa o import-map resolver.
-            if (!specifier.startsWith('.') && !specifier.startsWith('/')) {
-                return import(specifier);
-            }
-            // Se for um caminho relativo, calcula a URL completa.
-            url = new URL(specifier, parentUrl).href;
-
-            // Tenta adicionar extensões se não houver. Isso é CRUCIAL.
-            const potentialUrls = [url, `${url}.ts`, `${url}.tsx`, `${url}/index.ts`, `${url}/index.tsx`];
-            
-            let sourceCode;
-            let finalUrl;
-
-            // 2. BAIXAR: Tenta buscar o arquivo em uma das possíveis URLs.
-            for (const potentialUrl of potentialUrls) {
-                if (fileCache.has(potentialUrl)) {
-                    // Se já estiver em cache, usa o Blob URL diretamente.
-                    const cachedBlobUrl = fileCache.get(potentialUrl);
-                    return import(cachedBlobUrl);
-                }
-                try {
-                    const response = await fetch(potentialUrl);
-                    if (response.ok) {
-                        sourceCode = await response.text();
-                        finalUrl = potentialUrl;
-                        break;
-                    }
-                } catch (e) { /* Ignora e tenta a próxima URL */ }
-            }
-
-            if (!sourceCode) {
-                throw new Error(`Módulo não encontrado: "${specifier}" a partir de ${parentUrl}`);
-            }
-
-            // 3. ENVIAR AO TRANSPILADOR (Babel)
-            // Substitui todos os `import from './path'` por `import from await loadModule('./path', ...)`
-            // Isso transforma a cadeia de imports em uma cadeia de chamadas assíncronas para esta mesma função.
-            const transformedImportsCode = sourceCode.replace(
-                /import\s+(.*?)\s+from\s+['"](.*?)['"];/g,
-                `import $1 from await loadModule("$2", "${finalUrl}");`
-            );
-            
-            // Transpila o código com a sintaxe de import modificada.
-            const { code } = Babel.transform(transformedImportsCode, {
-                presets: ['react', 'typescript'],
-                filename: finalUrl, // Essencial para o Babel saber que é um .tsx e para erros mais claros
-            });
-
-            // 4. CRIAR O BLOB NAVEGÁVEL
-            // O código agora é JavaScript puro. Criamos um Blob e uma URL para ele.
-            const blob = new Blob([code], { type: 'application/javascript' });
-            const blobUrl = URL.createObjectURL(blob);
-            
-            fileCache.set(finalUrl, blobUrl); // Guarda no cache para futuros imports
-
-            // 5. EXECUTAR
-            // Importa o módulo a partir da URL do Blob, que o navegador entende perfeitamente.
-            return import(blobUrl);
-        }
-
-        // --- PONTO DE ENTRADA DA APLICAÇÃO ---
-        try {
-            console.log('Iniciando carregamento da aplicação...');
-            // Mira no /index.tsx e inicia todo o processo recursivo.
-            await loadModule('/index.tsx', window.location.href);
-            console.log('Aplicação carregada com sucesso!');
-        } catch (error) {
-            console.error('Falha ao inicializar a aplicação:', error);
-            const rootEl = document.getElementById('root');
-            rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p><pre>${error.stack}</pre></div>`;
-        }
-    </script>
-</body>
+    <!-- Mantido, como você pediu -->
+    <script type="module" src="/index.tsx"></script>
+  </body>
 </html>
