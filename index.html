@@ -1,78 +1,43 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0B071A" />
     
-    <!-- SEO and Social Sharing Meta Tags -->
+    <!-- SEO and Social Sharing Meta Tags (Mantidos e Otimizados) -->
     <title>fillshy - Autonomous AI Content Pipeline</title>
-    <meta
-      name="description"
-      content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository."
-    />
+    <meta name="description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
     <link rel="canonical" href="./" />
-
-    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="./" />
     <meta property="og:title" content="fillshy - Autonomous AI Content Pipeline" />
     <meta property="og:description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
-    <meta property="og:image" content="/social-preview.png" />
-
-    <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="./" />
     <meta property="twitter:title" content="fillshy - Autonomous AI Content Pipeline" />
     <meta property="twitter:description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
-    <meta property="twitter:image" content="/social-preview.png" />
 
-    <!-- SEO extra -->
-    <meta name="keywords" content="fillshy, AI, autonomous, content pipeline, GitHub, automation" />
-    <meta name="author" content="fillshy" />
-    <meta name="robots" content="index,follow" />
-
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" rel="stylesheet">
     
+    <!-- Tailwind CSS (via CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         theme: {
           extend: {
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              heading: ['Sora', 'sans-serif'],
-            },
+            fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Sora', 'sans-serif'] },
             keyframes: {
-              'reveal-word': {
-                'from': { opacity: '0', transform: 'translateY(10px)' },
-                'to': { opacity: '1', transform: 'translateY(0)' },
-              },
-              'letter-reveal': {
-                '0%': { opacity: 0, transform: 'translateY(20px) scale(0.8)' },
-                '100%': { opacity: 1, transform: 'translateY(0) scale(1)' },
-              },
-              'logo-bar-1': {
-                '0%': { transform: 'translateY(-40px)', opacity: 0 },
-                '100%': { transform: 'translateY(0)', opacity: 1 },
-              },
-              'logo-bar-2': {
-                '0%': { transform: 'translateY(40px)', opacity: 0 },
-                '100%': { transform: 'translateY(0)', opacity: 1 },
-              },
-              'blob-animation': {
-                '0%': { transform: 'translate(0px, 0px) scale(1)' },
-                '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
-                '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-                '100%': { transform: 'translate(0px, 0px) scale(1)' },
-              },
-              'fade-in': {
-                'from': { opacity: 0 },
-                'to': { opacity: 1 },
-              },
+              'reveal-word': { 'from': { opacity: '0', transform: 'translateY(10px)' }, 'to': { opacity: '1', transform: 'translateY(0)' } },
+              'letter-reveal': { '0%': { opacity: 0, transform: 'translateY(20px) scale(0.8)' }, '100%': { opacity: 1, transform: 'translateY(0) scale(1)' } },
+              'logo-bar-1': { '0%': { transform: 'translateY(-40px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } },
+              'logo-bar-2': { '0%': { transform: 'translateY(40px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } },
+              'blob-animation': { '0%': { transform: 'translate(0px, 0px) scale(1)' }, '33%': { transform: 'translate(30px, -50px) scale(1.1)' }, '66%': { transform: 'translate(-20px, 20px) scale(0.9)' }, '100%': { transform: 'translate(0px, 0px) scale(1)' } },
+              'fade-in': { 'from': { opacity: 0 }, 'to': { opacity: 1 } },
             },
             animation: {
               'reveal-word': 'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
@@ -87,176 +52,72 @@
       }
     </script>
 
+    <!-- Custom Styles -->
     <style>
-      html {
-        overflow-y: auto;
-      }
-      .scrollbar-hide {
-        -ms-overflow-style: none; /* IE and Edge */
-        scrollbar-width: none; /* Firefox */
-      }
-      .scrollbar-hide::-webkit-scrollbar {
-        display: none; /* Safari and Chrome */
-      }
+      html { overflow-y: auto; }
+      .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      .scrollbar-hide::-webkit-scrollbar { display: none; }
     </style>
 
-    <!-- Import map original + complementos para React 18 dev -->
-    <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@18.3.1?dev",
-        "react-dom": "https://esm.sh/react-dom@18.3.1?dev",
-        "react-dom/client": "https://esm.sh/react-dom@18.3.1/client?dev",
-        "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime?dev",
+    <!-- PASSO 1: AS FERRAMENTAS ESSENCIAIS -->
+    <!-- SystemJS - O carregador de módulos inteligente -->
+    <script src="https://cdn.jsdelivr.net/npm/systemjs/dist/s.min.js"></script>
+    <!-- Plugin do Babel para o SystemJS -->
+    <script src="https://cdn.jsdelivr.net/npm/systemjs-plugin-babel/dist/plugin-babel.min.js"></script>
+    <!-- Babel Standalone - O transpilador que converte TSX para JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
 
-        "react": "https://aistudiocdn.com/react@^19.2.0",
-        "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-        "react/": "https://aistudiocdn.com/react@^19.2.0/",
-        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1",
-        "vite": "https://aistudiocdn.com/vite@^7.2.2",
-        "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
-      }
-    }
-    </script>
-
-    <!-- SystemJS -->
-    <script src="https://cdn.jsdelivr.net/npm/systemjs@6.15.1/dist/system.min.js" crossorigin="anonymous"></script>
-
-    <!-- Babel Standalone -->
-    <script src="https://unpkg.com/@babel/standalone@7.26.0/babel.min.js" crossorigin="anonymous"></script>
-
-    <!-- Config Babel TS/TSX + React -->
-    <script>
-      window.BABEL_TSX_OPTIONS = {
-        presets: [
-          ["typescript", { allExtensions: true, isTSX: true }],
-          ["react", { runtime: "automatic", importSource: "react" }]
-        ],
-        sourceMaps: "inline"
-      };
-    </script>
-
-    <!-- Bootloader: foca em /index.tsx, interpreta exatamente o que você escreveu e segue todos os imports -->
-    <script type="module">
-      const ENTRY_TSX = "/index.tsx";
-      const blobCache = new Map(); // moduleUrl -> blobUrl
-
-      function transpile(source, url) {
-        const { code } = Babel.transform(source, {
-          ...window.BABEL_TSX_OPTIONS,
-          filename: url
-        });
-        return code;
-      }
-
-      function createBlobUrl(code) {
-        const blob = new Blob([code], { type: "application/javascript" });
-        return URL.createObjectURL(blob);
-      }
-
-      function resolveRelative(parentUrl, specifier) {
-        return new URL(specifier, parentUrl).toString();
-      }
-
-      async function getBlobForModule(moduleUrl) {
-        if (blobCache.has(moduleUrl)) return blobCache.get(moduleUrl);
-
-        const res = await fetch(moduleUrl);
-        if (!res.ok) {
-          throw new Error(`Falha ao carregar módulo: ${moduleUrl} (${res.status})`);
-        }
-        const source = await res.text();
-
-        let jsCode = source;
-        if (moduleUrl.endsWith(".ts") || moduleUrl.endsWith(".tsx")) {
-          jsCode = transpile(source, moduleUrl);
-        }
-
-        const blobUrl = createBlobUrl(jsCode);
-        blobCache.set(moduleUrl, blobUrl);
-        return blobUrl;
-      }
-
-      // Resolver de módulos do SystemJS para caminhos relativos
-      const origResolve = SystemJS.resolve;
-      SystemJS.resolve = function(specifier, parentUrl) {
-        // ./App, ../algo
-        if (specifier.startsWith("./") || specifier.startsWith("../")) {
-          const resolved = resolveRelative(parentUrl, specifier);
-          if (!/\.(js|ts|tsx)$/.test(resolved)) {
-            // Se não tiver extensão, assume .tsx
-            return resolved + ".tsx";
-          }
-          return resolved;
-        }
-
-        // /algumaCoisa -> caminho absoluto no mesmo host
-        if (specifier.startsWith("/")) {
-          return specifier;
-        }
-
-        // Outros (react, react-dom, etc.) ficam para importmap/navegador
-        if (origResolve) return origResolve(specifier, parentUrl);
-        return specifier;
-      };
-
-      // Hook no fetch do SystemJS para passar pela pipeline TS/TSX -> Blob
-      const origFetch = SystemJS.fetch || fetch.bind(window);
-      SystemJS.fetch = async function(url, options) {
-        const isLocalTsLike = url.endsWith(".ts") || url.endsWith(".tsx");
-        const isLocalJs = url.startsWith("/") && url.endsWith(".js");
-
-        if (isLocalTsLike || isLocalJs) {
-          const blobUrl = await getBlobForModule(url);
-          return origFetch(blobUrl, options);
-        }
-
-        return origFetch(url, options);
-      };
-
-      (async function bootstrap() {
-        try {
-          const entryUrl = new URL(ENTRY_TSX, window.location.origin).toString();
-          const entryBlob = await getBlobForModule(entryUrl);
-          await System.import(entryBlob);
-          // A partir daqui, seu index.tsx roda como você escreveu:
-          //
-          // import React from 'react';
-          // import ReactDOM from 'react-dom/client';
-          // import { App } from './App';
-          // import { LanguageProvider } from './contexts/LanguageContext';
-          //
-          // const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
-          // root.render(
-          //   <React.StrictMode>
-          //     <LanguageProvider>
-          //       <App />
-          //     </LanguageProvider>
-          //   </React.StrictMode>
-          // );
-          //
-          // E todos os imports relativos dentro dele (./App, ./contexts/LanguageContext, etc.)
-          // serão resolvidos, baixados, transpilados e executados do mesmo jeito.
-        } catch (err) {
-          console.error("Erro ao inicializar a aplicação", err);
-          const root = document.getElementById("root");
-          if (root) {
-            root.innerHTML = `
-              <div style="padding:16px;color:#f97373;font-family:monospace;">
-                Erro ao inicializar a aplicação:<br/>
-                <pre>${String(err)}</pre>
-              </div>
-            `;
-          }
-        }
-      })();
-    </script>
-  </head>
-  <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+</head>
+<body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
+    <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
     <div id="root"></div>
 
-    <!-- Mantido, embora o bootloader já carregue o index.tsx via Blob -->
-    <script type="module" src="/index.tsx"></script>
-  </body>
+    <!-- PASSO 2: A CONFIGURAÇÃO (O CÉREBRO DA OPERAÇÃO) -->
+    <script>
+        // Informa ao SystemJS qual instância do Babel usar
+        System.set('plugin-babel', System.newModule({ 'default': window.Babel, __useDefault: true }));
+
+        // Configuração principal do SystemJS
+        System.config({
+            // 1. Mapeamento de dependências (o "Import Map" do SystemJS)
+            map: {
+                'react': 'https://esm.sh/react@18.3.1',
+                'react-dom/client': 'https://esm.sh/react-dom@18.3.1/client',
+                // Mapeia o plugin de transpilação
+                'plugin-babel': 'https://cdn.jsdelivr.net/npm/systemjs-plugin-babel/dist/plugin-babel.min.js'
+            },
+            // 2. Transpilador: Diz ao SystemJS para usar o Babel
+            transpiler: 'plugin-babel',
+            
+            // 3. Regras (A MÁGICA ACONTECE AQUI)
+            meta: {
+                // Para qualquer arquivo que termine com .js, .ts, ou .tsx...
+                '*.{js,ts,tsx}': {
+                    // ...use o transpilador Babel com estas opções:
+                    babelOptions: {
+                        // Presets essenciais para entender React e TypeScript
+                        react: true,
+                        typescript: true
+                    }
+                }
+            }
+        });
+
+        // PASSO 3: A EXECUÇÃO
+        // Ponto de entrada: Manda o SystemJS importar o seu arquivo principal.
+        // Ele vai automaticamente "mirar", baixar, transpilar e resolver todas as dependências.
+        System.import('/index.tsx')
+          .then(function() {
+            console.log('Aplicação iniciada com sucesso pelo SystemJS!');
+          })
+          .catch(function(err) {
+            console.error('Erro ao inicializar a aplicação:', err);
+            // Mostra um erro amigável na tela se algo der errado
+            document.getElementById('root').innerHTML = `
+              <div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;">
+                  <h2>Erro na Aplicação</h2><p>${err.message}</p><pre>${err.stack}</pre>
+              </div>`;
+          });
+    </script>
+</body>
 </html>
