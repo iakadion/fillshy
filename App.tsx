@@ -304,7 +304,7 @@ setError(err instanceof Error ? err.message : "An unknown error occurred.");
                         autonomousLogs={autonomousLogs}
                         onOpenChangelog={() => setChangelogModalOpen(true)}
                     />
-                    <div className={`flex-1 flex flex-col overflow-hidden relative transition-all duration-300 ease-in-out md:pl-0 ${isSidebarOpen ? 'md:pl-24' : ''}`}>
+                    <div className="flex-1 flex flex-col overflow-hidden relative transition-all duration-300 ease-in-out md:pl-24">
                         <Header 
                             categoryName={selectedCategory?.name || t('header.selectCategory')}
                         />

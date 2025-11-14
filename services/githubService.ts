@@ -14,6 +14,16 @@ function toBase64(str: string) {
 }
 
 /**
+ * Generates a dynamic placeholder image URL.
+ * @param title The content title to use as a seed.
+ * @returns A URL from Unsplash.
+ */
+const getDynamicImageUrl = (title: string): string => {
+    const query = encodeURIComponent(title.split(' ').slice(0, 3).join(','));
+    return `https://source.unsplash.com/800x600/?${query}`;
+};
+
+/**
  * Fetches repository details, specifically the default branch.
  * Essential for committing to new/empty repositories.
  * @param config - The GitHub credentials and repo info.
@@ -136,30 +146,40 @@ export const saveContentItem = async (
         id: data.content.sha,
         title,
         description,
-        // FIX: Add placeholder imageUrl to satisfy the ContentItem type.
-        imageUrl: '',
+        imageUrl: getDynamicImageUrl(title),
     };
 };
 
 /**
- * Parses markdown content to extract title and description.
+ * Parses markdown content to extract title, description, and an optional image URL.
  * Assumes the first line with '#' is the title.
+ * Looks for the first markdown image syntax `![alt](url)`.
  * @param content - The raw file content.
- * @returns An object with title and description.
+ * @returns An object with title, description, and imageUrl.
  */
-const parseMarkdownContent = (content: string): { title: string; description: string } => {
+const parseMarkdownContent = (content: string): { title: string; description: string; imageUrl: string } => {
     const lines = content.split('\n');
     let title = 'Untitled';
     let description = content;
+    let imageUrl = '';
+
+    const imageRegex = /!\[.*?\]\((.*?)\)/;
+    const imageMatch = content.match(imageRegex);
+    if (imageMatch && imageMatch[1]) {
+        imageUrl = imageMatch[1];
+    }
 
     const titleIndex = lines.findIndex(line => line.startsWith('# '));
-
     if (titleIndex !== -1) {
         title = lines[titleIndex].substring(2).trim();
         description = lines.slice(titleIndex + 1).join('\n').trim();
     }
     
-    return { title, description };
+    if (!imageUrl) {
+        imageUrl = getDynamicImageUrl(title);
+    }
+    
+    return { title, description, imageUrl };
 }
 
 /**
@@ -214,14 +234,13 @@ export const fetchContentItemsForCategory = async (
             return null;
         }
         const rawContent = await fileResponse.text();
-        const { title, description } = parseMarkdownContent(rawContent);
+        const { title, description, imageUrl } = parseMarkdownContent(rawContent);
 
         return {
             id: file.sha,
             title,
             description,
-            // FIX: Add placeholder imageUrl to satisfy the ContentItem type.
-            imageUrl: '',
+            imageUrl,
         };
     });
     

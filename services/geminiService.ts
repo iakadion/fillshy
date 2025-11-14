@@ -28,19 +28,30 @@ export const generateContent = async (prompt: string): Promise<string> => {
  * @returns Um objeto com título e descrição.
  */
 export const parseGeneratedText = (text: string): { title: string; description: string } => {
-    const lines = text.split('\n');
+    const lines = text.trim().split('\n');
     let title = 'Conteúdo Gerado';
     let description = text.trim();
 
-    const titleLineIndex = lines.findIndex(line => line.toLowerCase().startsWith('título:'));
-
-    if (titleLineIndex !== -1) {
-        title = lines[titleLineIndex].substring('título:'.length).trim();
-        // A descrição começa após a linha do título e uma possível linha em branco.
-        const descriptionStartIndex = lines[titleLineIndex + 1] === '' ? titleLineIndex + 2 : titleLineIndex + 1;
-        description = lines.slice(descriptionStartIndex).join('\n').trim();
+    if (lines.length === 0) {
+        return { title, description };
     }
 
+    const titleLineIndex = lines.findIndex(line => /^(título|title):/i.test(line));
+
+    if (titleLineIndex !== -1) {
+        title = lines[titleLineIndex].replace(/^(título|title):/i, '').trim();
+        const descriptionStartIndex = lines[titleLineIndex + 1] === '' ? titleLineIndex + 2 : titleLineIndex + 1;
+        description = lines.slice(descriptionStartIndex).join('\n').trim();
+    } else {
+        // Fallback: Assume a primeira linha não vazia é o título.
+        const firstLine = lines[0].trim();
+        if (firstLine) {
+            title = firstLine;
+            description = lines.slice(1).join('\n').trim();
+        }
+    }
+    
+    // Verificação final para título vazio
     if (!title) {
         title = "Título Gerado Automaticamente";
     }

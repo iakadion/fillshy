@@ -1,4 +1,3 @@
-// Fix: Removed unused and invalid 'antd' from import.
 import React from 'react';
 import { useCategories } from '../constants';
 import { useTranslations } from '../hooks/useTranslations';

@@ -24,7 +24,7 @@ const LibraryIcon = ({ className }: { className?: string }) => (
 );
 const SettingsIcon = ({ className }: { className?: string }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0 3.35a1.724 1.724 0 001.066 2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
 );
@@ -70,7 +70,8 @@ const BottomBar: React.FC<BottomBarProps> = ({ activeView, onNavigate, isSidebar
              label: t('bottomBar.toggleSidebar'), 
              icon: SidebarToggleIcon, 
              action: () => setSidebarOpen?.(!isSidebarOpen),
-             condition: activeView === 'app'
+             condition: activeView === 'app',
+             className: 'md:hidden' // Hide on desktop
          },
     ];
 
@@ -83,7 +84,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ activeView, onNavigate, isSidebar
                          <button
                             key={item.id}
                             onClick={item.action}
-                            className="flex flex-col items-center justify-center w-20 h-full text-gray-300 hover:text-white transition-colors duration-200 py-1 group"
+                            className={`flex flex-col items-center justify-center w-20 h-full text-gray-300 hover:text-white transition-colors duration-200 py-1 group ${item.className || ''}`}
                             title={item.label}
                         >
                             <item.icon className="transition-transform duration-200 group-hover:scale-110" />

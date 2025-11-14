@@ -90,18 +90,17 @@ const Sidebar: React.FC<SidebarProps> = ({ categories, selectedCategory, onSelec
             {/* Sidebar container */}
             <aside className={`
                 fixed z-40
-                transition-all duration-300 ease-in-out
+                transition-transform duration-300 ease-in-out
                 
-                // Mobile styles
+                // Mobile styles (fly-out)
                 top-0 left-0 h-full w-64 bg-[#0B071A] border-r border-[#312B58]/50
                 ${isOpen ? 'translate-x-0' : '-translate-x-full'}
                 
-                // Desktop styles: Sleek, floating, and tightly fitted pill
-                md:w-16 md:h-auto
+                // Desktop styles (always visible, floating pill)
+                md:translate-x-0 md:w-16 md:h-auto
                 md:top-1/2 md:-translate-y-1/2 md:left-4
                 md:bg-[#1A1433]/80 md:backdrop-blur-xl md:border md:border-white/10 md:rounded-full
-                md:transform-none md:transition-all md:p-2
-                ${isOpen ? 'md:opacity-100 md:translate-x-0' : 'md:opacity-0 md:-translate-x-10 md:pointer-events-none'}
+                md:p-2 
             `}>
                 {sidebarContent}
             </aside>
