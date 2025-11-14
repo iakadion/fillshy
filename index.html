@@ -2,59 +2,49 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="theme-color" content="#0B071A" />
     
-    <!-- SEO and Social Sharing Meta Tags -->
-    <title>fillshy - Autonomous AI Content Pipeline</title>
-    <meta
-      name="description"
-      content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository."
-    />
-    <meta name="keywords" content="AI, content generation, GitHub integration, autonomous pipeline, fillshy, artificial intelligence, content automation" />
+    <!-- SEO Meta Tags -->
+    <title>fillshy - Autonomous AI Content Pipeline | Generate Content 24/7</title>
+    <meta name="description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository. Autonomous AI Content Pipeline for developers." />
+    <meta name="keywords" content="AI content, GitHub automation, content pipeline, autonomous AI, content generation, fillshy, AI automation" />
     <meta name="author" content="fillshy" />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="./" />
     
-    <!-- Preconnect to external domains -->
-    <link rel="dns-prefetch" href="https://unpkg.com" />
-    <link rel="dns-prefetch" href="https://esm.sh" />
-    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
-    <link rel="preconnect" href="https://unpkg.com" />
-    <link rel="preconnect" href="https://esm.sh" />
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="./" />
+    <meta property="og:site_name" content="fillshy" />
     <meta property="og:title" content="fillshy - Autonomous AI Content Pipeline" />
     <meta property="og:description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
-    <meta property="og:image" content="./og-image.png" />
     <meta property="og:locale" content="pt_BR" />
-    <meta property="og:site_name" content="fillshy" />
     
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="./" />
-    <meta property="twitter:title" content="fillshy - Autonomous AI Content Pipeline" />
-    <meta property="twitter:description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
-    <meta property="twitter:image" content="./twitter-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="./" />
+    <meta name="twitter:title" content="fillshy - Autonomous AI Content Pipeline" />
+    <meta name="twitter:description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
+    <meta name="twitter:site" content="@fillshy" />
     <meta name="twitter:creator" content="@fillshy" />
-    
-    <!-- Additional SEO -->
-    <meta itemprop="name" content="fillshy - Autonomous AI Content Pipeline" />
-    <meta itemprop="description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
-    <meta itemprop="image" content="./og-image.png" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Preconnect para otimização -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="preconnect" href="https://esm.sh" />
     
-    <!-- Babel Standalone for TypeScript/TSX transpilation -->
-    <script crossorigin src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" rel="stylesheet" />
     
-    <!-- Tailwind CSS -->
+    <!-- TailwindCSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -110,253 +100,325 @@
         overflow-y: auto;
       }
       .scrollbar-hide {
-        -ms-overflow-style: none; /* IE and Edge */
-        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;
+        scrollbar-width: none;
       }
       .scrollbar-hide::-webkit-scrollbar {
-        display: none; /* Safari and Chrome */
+        display: none;
       }
     </style>
 
-    <!-- Enhanced Import Map with all necessary dependencies -->
+    <!-- SystemJS para gerenciamento de módulos -->
+    <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/system.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/extras/named-register.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.2/dist/extras/amd.min.js"></script>
+    
+    <!-- Babel Standalone para transpilação -->
+    <script src="https://unpkg.com/@babel/standalone@7.24.0/babel.min.js"></script>
+    
+    <!-- Import Map -->
     <script type="importmap">
     {
       "imports": {
         "react": "https://esm.sh/react@18.2.0",
-        "react-dom": "https://esm.sh/react-dom@18.2.0",
-        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-        "react-dom/": "https://esm.sh/react-dom@18.2.0/",
         "react/": "https://esm.sh/react@18.2.0/",
-        "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-        "react/jsx-dev-runtime": "https://esm.sh/react@18.2.0/jsx-dev-runtime",
+        "react-dom": "https://esm.sh/react-dom@18.2.0",
+        "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
         "@google/genai": "https://esm.sh/@google/generative-ai@0.1.3",
-        "@google/generative-ai": "https://esm.sh/@google/generative-ai@0.1.3",
-        "vite": "https://esm.sh/vite@5.0.10",
-        "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@4.2.1",
-        "react-router-dom": "https://esm.sh/react-router-dom@6.21.1",
-        "react-router": "https://esm.sh/react-router@6.21.1",
-        "@types/react": "https://esm.sh/@types/react@18.2.45",
-        "@types/react-dom": "https://esm.sh/@types/react-dom@18.2.17",
-        "typescript": "https://esm.sh/typescript@5.3.3",
-        "axios": "https://esm.sh/axios@1.6.2",
-        "clsx": "https://esm.sh/clsx@2.1.0",
-        "framer-motion": "https://esm.sh/framer-motion@10.16.16",
-        "lucide-react": "https://esm.sh/lucide-react@0.303.0",
-        "@radix-ui/react-dialog": "https://esm.sh/@radix-ui/react-dialog@1.0.5",
-        "@radix-ui/react-slot": "https://esm.sh/@radix-ui/react-slot@1.0.2",
-        "class-variance-authority": "https://esm.sh/class-variance-authority@0.7.0",
-        "tailwind-merge": "https://esm.sh/tailwind-merge@2.2.0",
-        "zustand": "https://esm.sh/zustand@4.4.7"
+        "vite": "https://esm.sh/vite@5.0.0",
+        "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@4.2.0"
       }
     }
     </script>
 
-    <!-- TypeScript/TSX Module Loader with Blob Support -->
-    <script type="module">
-      // Cache for transpiled modules
-      const moduleCache = new Map();
-      const loadingModules = new Map();
-      
-      // Babel configuration for TypeScript/TSX
-      const babelOptions = {
-        presets: [
-          ['typescript', { isTSX: true, allExtensions: true }],
-          ['react', { runtime: 'automatic' }]
-        ],
-        filename: 'virtual.tsx'
-      };
+    <!-- Sistema de Transpilação TSX/TS -->
+    <script>
+      // Configuração global
+      window.__DEV__ = true;
+      window.__TRANSPILE_CACHE__ = new Map();
+      window.__MODULE_CACHE__ = new Map();
+      window.__BASE_URL__ = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/');
 
-      // Resolve relative imports
-      function resolveRelativePath(importPath, basePath) {
-        if (importPath.startsWith('http://') || importPath.startsWith('https://')) {
-          return importPath;
+      // Sistema de transpilação e carregamento de módulos
+      class TSXTranspiler {
+        constructor() {
+          this.cache = window.__TRANSPILE_CACHE__;
+          this.moduleCache = window.__MODULE_CACHE__;
+          this.pendingModules = new Set();
         }
-        
-        if (importPath.startsWith('./') || importPath.startsWith('../')) {
-          const base = basePath.substring(0, basePath.lastIndexOf('/'));
-          const resolved = new URL(importPath, window.location.origin + base + '/').pathname;
+
+        // Resolve caminho relativo para absoluto
+        resolvePath(importPath, basePath = '') {
+          console.log(`[TSXTranspiler] Resolvendo: ${importPath} com base: ${basePath}`);
           
-          // Add extension if missing
-          if (!resolved.endsWith('.tsx') && !resolved.endsWith('.ts') && !resolved.endsWith('.jsx') && !resolved.endsWith('.js')) {
-            // Try different extensions in order
-            const extensions = ['.tsx', '.ts', '.jsx', '.js', '/index.tsx', '/index.ts', '/index.jsx', '/index.js'];
-            for (const ext of extensions) {
-              const testPath = resolved + ext;
-              // For now, we'll assume .tsx as default
-              return resolved + '.tsx';
-            }
+          // Se já é uma URL completa, retorna
+          if (importPath.startsWith('http://') || importPath.startsWith('https://')) {
+            return importPath;
           }
-          return resolved;
-        }
-        
-        return importPath;
-      }
 
-      // Transform import statements to use blob URLs
-      function transformImports(code, basePath) {
-        const importRegex = /import\s+(?:(\{[^}]*\}|\*\s+as\s+\w+|\w+)(?:\s*,\s*(\{[^}]*\}|\w+))?\s+from\s+)?['"]([^'"]+)['"]/g;
-        const exportRegex = /export\s+(?:\{[^}]*\}|\*)\s+from\s+['"]([^'"]+)['"]/g;
-        
-        let transformed = code;
-        
-        // Transform imports
-        transformed = transformed.replace(importRegex, (match, imports1, imports2, path) => {
-          const resolvedPath = resolveRelativePath(path, basePath);
-          
-          // Check if it's a bare import (from import map)
-          if (!resolvedPath.startsWith('./') && !resolvedPath.startsWith('../') && !resolvedPath.startsWith('/')) {
-            return match; // Keep as is for import map resolution
+          // Se é um import de biblioteca (não começa com . ou /)
+          if (!importPath.startsWith('.') && !importPath.startsWith('/')) {
+            console.log(`[TSXTranspiler] Import de biblioteca detectado: ${importPath}`);
+            return importPath;
           }
-          
-          return match.replace(path, resolvedPath);
-        });
-        
-        // Transform re-exports
-        transformed = transformed.replace(exportRegex, (match, path) => {
-          const resolvedPath = resolveRelativePath(path, basePath);
-          return match.replace(path, resolvedPath);
-        });
-        
-        return transformed;
-      }
 
-      // Transpile TypeScript/TSX to JavaScript
-      async function transpileModule(code, filePath) {
-        try {
-          // Transform imports first
-          const transformedCode = transformImports(code, filePath);
-          
-          // Transpile with Babel
-          const result = Babel.transform(transformedCode, babelOptions);
-          
-          // Create module wrapper
-          const moduleCode = `
-            import React from 'react';
-            import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from 'react/jsx-runtime';
-            ${result.code}
-          `;
-          
-          return moduleCode;
-        } catch (error) {
-          console.error('Transpilation error:', error);
-          throw error;
-        }
-      }
+          // Adiciona extensões se necessário
+          let resolvedPath = importPath;
+          if (!resolvedPath.match(/\.(tsx?|jsx?)$/)) {
+            // Tenta adicionar .tsx primeiro, depois .ts, .jsx, .js
+            const extensions = ['.tsx', '.ts', '.jsx', '.js'];
+            resolvedPath = importPath;
+          }
 
-      // Load and transpile a module
-      async function loadModule(modulePath) {
-        // Check cache
-        if (moduleCache.has(modulePath)) {
-          return moduleCache.get(modulePath);
+          // Resolve caminho relativo
+          if (resolvedPath.startsWith('./') || resolvedPath.startsWith('../')) {
+            const base = basePath || window.__BASE_URL__;
+            const baseDir = base.replace(/\/[^\/]*$/, '/');
+            const resolved = new URL(resolvedPath, baseDir).href;
+            console.log(`[TSXTranspiler] Caminho resolvido: ${resolved}`);
+            return resolved;
+          }
+
+          // Caminho absoluto do site
+          if (resolvedPath.startsWith('/')) {
+            const resolved = window.__BASE_URL__ + resolvedPath.substring(1);
+            console.log(`[TSXTranspiler] Caminho absoluto resolvido: ${resolved}`);
+            return resolved;
+          }
+
+          return resolvedPath;
         }
-        
-        // Check if already loading
-        if (loadingModules.has(modulePath)) {
-          return loadingModules.get(modulePath);
-        }
-        
-        const loadPromise = (async () => {
+
+        // Busca arquivo fonte
+        async fetchSource(url) {
+          console.log(`[TSXTranspiler] Buscando arquivo: ${url}`);
+          
           try {
-            console.log('Loading module:', modulePath);
+            // Tenta diferentes extensões
+            const extensions = ['', '.tsx', '.ts', '.jsx', '.js'];
             
-            // Fetch the module
-            const response = await fetch(modulePath);
-            if (!response.ok) {
-              throw new Error(`Failed to fetch module: ${modulePath}`);
+            for (const ext of extensions) {
+              const fullUrl = url + ext;
+              try {
+                const response = await fetch(fullUrl);
+                if (response.ok) {
+                  const source = await response.text();
+                  console.log(`[TSXTranspiler] Arquivo encontrado: ${fullUrl}`);
+                  return { source, url: fullUrl };
+                }
+              } catch (e) {
+                continue;
+              }
             }
             
-            const code = await response.text();
-            
-            // Transpile the module
-            const transpiledCode = await transpileModule(code, modulePath);
-            
-            // Create blob URL
-            const blob = new Blob([transpiledCode], { type: 'application/javascript' });
-            const blobUrl = URL.createObjectURL(blob);
-            
-            // Cache the result
-            moduleCache.set(modulePath, blobUrl);
-            loadingModules.delete(modulePath);
-            
-            return blobUrl;
+            throw new Error(`Arquivo não encontrado: ${url}`);
           } catch (error) {
-            loadingModules.delete(modulePath);
-            console.error(`Error loading module ${modulePath}:`, error);
+            console.error(`[TSXTranspiler] Erro ao buscar ${url}:`, error);
             throw error;
           }
-        })();
-        
-        loadingModules.set(modulePath, loadPromise);
-        return loadPromise;
+        }
+
+        // Transpila código TypeScript/TSX para JavaScript
+        transpile(source, filename = 'module.tsx') {
+          console.log(`[TSXTranspiler] Transpilando: ${filename}`);
+          
+          try {
+            const result = Babel.transform(source, {
+              filename,
+              presets: [
+                ['react', { runtime: 'automatic' }],
+                ['typescript', { isTSX: true, allExtensions: true }]
+              ],
+              plugins: [
+                'transform-modules-systemjs'
+              ]
+            });
+
+            console.log(`[TSXTranspiler] Transpilação concluída: ${filename}`);
+            return result.code;
+          } catch (error) {
+            console.error(`[TSXTranspiler] Erro na transpilação de ${filename}:`, error);
+            throw error;
+          }
+        }
+
+        // Processa imports no código transpilado
+        processImports(code, basePath) {
+          console.log(`[TSXTranspiler] Processando imports em: ${basePath}`);
+          
+          // Regex para encontrar imports
+          const importRegex = /from\s+['"]([^'"]+)['"]/g;
+          let match;
+          const imports = [];
+
+          while ((match = importRegex.exec(code)) !== null) {
+            imports.push(match[1]);
+          }
+
+          // Resolve todos os imports
+          let processedCode = code;
+          imports.forEach(importPath => {
+            const resolved = this.resolvePath(importPath, basePath);
+            if (resolved !== importPath) {
+              processedCode = processedCode.replace(
+                new RegExp(`from\\s+['"]${importPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`, 'g'),
+                `from '${resolved}'`
+              );
+            }
+          });
+
+          return { code: processedCode, imports };
+        }
+
+        // Cria blob URL para módulo
+        createBlobModule(code) {
+          const blob = new Blob([code], { type: 'application/javascript' });
+          const blobUrl = URL.createObjectURL(blob);
+          console.log(`[TSXTranspiler] Blob criado: ${blobUrl}`);
+          return blobUrl;
+        }
+
+        // Carrega e transpila módulo
+        async loadModule(modulePath, basePath = '') {
+          const resolvedPath = this.resolvePath(modulePath, basePath);
+          
+          console.log(`[TSXTranspiler] Carregando módulo: ${resolvedPath}`);
+
+          // Verifica cache
+          if (this.moduleCache.has(resolvedPath)) {
+            console.log(`[TSXTranspiler] Módulo em cache: ${resolvedPath}`);
+            return this.moduleCache.get(resolvedPath);
+          }
+
+          // Previne carregamento duplicado
+          if (this.pendingModules.has(resolvedPath)) {
+            console.log(`[TSXTranspiler] Módulo já está sendo carregado: ${resolvedPath}`);
+            return new Promise((resolve) => {
+              const interval = setInterval(() => {
+                if (this.moduleCache.has(resolvedPath)) {
+                  clearInterval(interval);
+                  resolve(this.moduleCache.get(resolvedPath));
+                }
+              }, 100);
+            });
+          }
+
+          this.pendingModules.add(resolvedPath);
+
+          try {
+            // Busca o arquivo
+            const { source, url } = await this.fetchSource(resolvedPath);
+
+            // Transpila
+            const transpiledCode = this.transpile(source, url);
+
+            // Processa imports
+            const { code: processedCode, imports } = this.processImports(transpiledCode, url);
+
+            // Carrega dependências recursivamente
+            await Promise.all(
+              imports.map(imp => {
+                if (imp.startsWith('.') || imp.startsWith('/')) {
+                  return this.loadModule(imp, url);
+                }
+                return Promise.resolve();
+              })
+            );
+
+            // Cria blob
+            const blobUrl = this.createBlobModule(processedCode);
+
+            // Registra no SystemJS
+            const moduleExports = await System.import(blobUrl);
+
+            // Armazena em cache
+            this.moduleCache.set(resolvedPath, moduleExports);
+            this.pendingModules.delete(resolvedPath);
+
+            console.log(`[TSXTranspiler] Módulo carregado com sucesso: ${resolvedPath}`);
+            return moduleExports;
+
+          } catch (error) {
+            this.pendingModules.delete(resolvedPath);
+            console.error(`[TSXTranspiler] Erro ao carregar módulo ${resolvedPath}:`, error);
+            throw error;
+          }
+        }
       }
 
-      // Override fetch to intercept .tsx/.ts files
-      const originalFetch = window.fetch;
-      window.fetch = async function(...args) {
-        const url = args[0];
-        
-        if (typeof url === 'string' && (url.endsWith('.tsx') || url.endsWith('.ts'))) {
-          const blobUrl = await loadModule(url);
-          return originalFetch(blobUrl);
-        }
-        
-        return originalFetch.apply(this, args);
-      };
+      // Inicializa o transpilador
+      window.tsxTranspiler = new TSXTranspiler();
 
-      // Load and initialize the main application
-      async function initializeApp() {
+      // Função para iniciar a aplicação
+      async function initApp() {
+        console.log('[App] Iniciando aplicação...');
+        
         try {
-          console.log('Initializing application...');
+          // Carrega o módulo principal
+          console.log('[App] Carregando index.tsx...');
+          const mainModule = await window.tsxTranspiler.loadModule('./index.tsx');
           
-          // Load index.tsx
-          const indexModule = await loadModule('/index.tsx');
+          console.log('[App] Aplicação carregada com sucesso!');
           
-          // Dynamically import the transpiled module
-          const module = await import(indexModule);
-          
-          console.log('Application initialized successfully');
         } catch (error) {
-          console.error('Failed to initialize application:', error);
+          console.error('[App] Erro ao inicializar a aplicação:', error);
           
-          // Fallback: try to render error message
+          // Exibe erro na tela
           const root = document.getElementById('root');
           if (root) {
             root.innerHTML = `
-              <div style="color: #ff6b6b; padding: 20px; text-align: center;">
-                <h1>Error Loading Application</h1>
-                <p>${error.message}</p>
-                <pre style="text-align: left; background: #1a1a1a; padding: 10px; border-radius: 5px; overflow: auto;">
-${error.stack}
-                </pre>
+              <div style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                padding: 2rem;
+                text-align: center;
+                background: #0B071A;
+                color: #E0DDF0;
+              ">
+                <h1 style="font-size: 2rem; margin-bottom: 1rem; color: #ff6b6b;">
+                  ⚠️ Erro ao Carregar Aplicação
+                </h1>
+                <pre style="
+                  background: #1a1625;
+                  padding: 1rem;
+                  border-radius: 8px;
+                  max-width: 600px;
+                  overflow-x: auto;
+                  text-align: left;
+                  border: 1px solid #ff6b6b;
+                ">${error.message}\n\n${error.stack || ''}</pre>
+                <p style="margin-top: 1rem; opacity: 0.7;">
+                  Verifique o console para mais detalhes
+                </p>
               </div>
             `;
           }
         }
       }
 
-      // Initialize when DOM is ready
+      // Aguarda o DOM estar pronto
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        document.addEventListener('DOMContentLoaded', initApp);
       } else {
-        initializeApp();
+        initApp();
       }
     </script>
   </head>
+  
   <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root">
-      <!-- Loading state -->
-      <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
-        <div style="text-align: center;">
-          <div style="width: 50px; height: 50px; border: 3px solid #8B5CF6; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
-          <p style="margin-top: 20px; color: #8B5CF6;">Loading application...</p>
+    <noscript>
+      <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; text-align: center; background: #0B071A; color: #E0DDF0;">
+        <div>
+          <h1 style="font-size: 2rem; margin-bottom: 1rem;">JavaScript Necessário</h1>
+          <p>Você precisa habilitar o JavaScript para executar esta aplicação.</p>
         </div>
       </div>
-      <style>
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      </style>
-    </div>
+    </noscript>
+    
+    <div id="root"></div>
   </body>
 </html>
