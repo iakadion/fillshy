@@ -104,6 +104,6 @@ export const pt = {
   searchPage: {
     title: "Buscar Conteúdo",
     placeholder: "Busque por títulos ou palavras-chave...",
-    back: "Voltar",
+    back: "Back",
   }
 };

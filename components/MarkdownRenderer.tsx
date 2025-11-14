@@ -1,57 +1,47 @@
 import React from 'react';
 
-interface MarkdownRendererProps {
-    markdown: string;
-}
-
-const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ markdown }) => {
-    if (!markdown) return null;
-
+export const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
     const renderLine = (line: string, index: number) => {
-        // Handle bold text using regex
-        const parts = line.split(/(\*\*.*?\*\*)/g);
-        return (
-            <p key={index} className="mb-2">
-                {parts.map((part, i) => {
-                    if (part.startsWith('**') && part.endsWith('**')) {
-                        return <strong key={i}>{part.slice(2, -2)}</strong>;
-                    }
-                    return part;
-                })}
-            </p>
-        );
-    };
-
-    const lines = markdown.split('\n');
-    // Fix: Use React.ReactElement instead of JSX.Element to resolve namespace error.
-    const elements: React.ReactElement[] = [];
-    let listItems: string[] = [];
-
-    const flushList = () => {
-        if (listItems.length > 0) {
-            elements.push(
-                <ul key={`list-${elements.length}`} className="list-disc pl-5 my-4 space-y-1">
-                    {listItems.map((item, i) => <li key={i}>{item}</li>)}
-                </ul>
-            );
-            listItems = [];
+        if (line.startsWith('### ')) {
+            return <h3 key={index} className="text-xl font-bold mt-4 mb-2">{line.substring(4)}</h3>;
         }
+        if (line.startsWith('## ')) {
+            return <h2 key={index} className="text-2xl font-bold mt-6 mb-3 border-b border-purple-900 pb-2">{line.substring(3)}</h2>;
+        }
+        if (line.startsWith('# ')) {
+            return <h1 key={index} className="text-3xl font-bold mt-8 mb-4">{line.substring(2)}</h1>;
+        }
+        if (line.startsWith('- ')) {
+            return <li key={index} className="ml-5 list-disc">{line.substring(2)}</li>;
+        }
+        if (line.trim() === '') {
+            return null; // Don't render empty lines as paragraphs
+        }
+        return <p key={index} className="my-4">{line}</p>;
     };
 
-    lines.forEach((line, index) => {
-        if (line.trim().startsWith('- ')) {
-            listItems.push(line.trim().substring(2));
+    const lines = content.split('\n');
+    const elements = lines.map(renderLine).filter(Boolean); // Filter out nulls from empty lines
+
+    // Group list items
+    const groupedElements: React.ReactNode[] = [];
+    let currentList: React.ReactNode[] = [];
+
+    elements.forEach((element, index) => {
+        if (React.isValidElement(element) && element.type === 'li') {
+            currentList.push(element);
         } else {
-            flushList();
-            if (line.trim() !== '') {
-                elements.push(renderLine(line, index));
+            if (currentList.length > 0) {
+                groupedElements.push(<ul key={`ul-${index}`} className="my-4 space-y-2">{currentList}</ul>);
+                currentList = [];
             }
+            groupedElements.push(element);
         }
     });
 
-    flushList(); // Make sure to render any remaining list items at the end
+    if (currentList.length > 0) {
+        groupedElements.push(<ul key="ul-last" className="my-4 space-y-2">{currentList}</ul>);
+    }
 
-    return <div>{elements}</div>;
+    return <>{groupedElements}</>;
 };
-
-export default MarkdownRenderer;

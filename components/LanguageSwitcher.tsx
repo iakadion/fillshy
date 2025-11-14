@@ -1,76 +1,32 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 
-const GlobeIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h1a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.707 4.043l.828.828M4.043 7.707l.828.828M7.707 15.957l.828-.828M4.043 12.293l.828-.828" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.957 7.707l-.828.828M12.293 4.043l-.828.828M15.957 12.293l-.828-.828M12.293 15.957l-.828-.828" />
-    </svg>
-);
-
-const LanguageSwitcher: React.FC = () => {
+export const LanguageSwitcher: React.FC = () => {
     const { language, setLanguage, t } = useTranslations();
     const [isOpen, setIsOpen] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
+        function handleClickOutside(event: MouseEvent) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
             }
-        };
+        }
         document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
-
-    const handleLanguageChange = (lang: 'en' | 'pt') => {
-        setLanguage(lang);
-        setIsOpen(false);
-    };
-
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [wrapperRef]);
+    
     return (
-        <div className="relative" ref={wrapperRef}>
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="p-2 rounded-full text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-300"
-                aria-label={t('header.toggleLanguage')}
-            >
-                <GlobeIcon className={`transition-transform duration-300 ${isOpen ? 'rotate-12' : ''}`} />
+        <div ref={wrapperRef} className="relative">
+            <button onClick={() => setIsOpen(!isOpen)} className="p-2 rounded-xl hover:bg-[#2a2349] transition-colors" title={t('header.toggleLanguage')}>
+                <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"></path></svg>
             </button>
             {isOpen && (
-                <div 
-                    className="absolute top-full right-0 mt-2 w-28 bg-[#2a2252]/90 backdrop-blur-lg border border-white/10 rounded-lg shadow-2xl p-2 z-50
-                               animate-fade-in-down"
-                >
-                    <button 
-                        onClick={() => handleLanguageChange('en')}
-                        className={`w-full text-left px-3 py-1.5 text-sm rounded-md transition-colors ${language === 'en' ? 'bg-violet-500/50 text-white' : 'text-gray-200 hover:bg-white/10'}`}
-                    >
-                        English
-                    </button>
-                    <button 
-                        onClick={() => handleLanguageChange('pt')}
-                        className={`w-full text-left px-3 py-1.5 text-sm rounded-md transition-colors mt-1 ${language === 'pt' ? 'bg-violet-500/50 text-white' : 'text-gray-200 hover:bg-white/10'}`}
-                    >
-                        Português
-                    </button>
+                <div className="absolute right-0 mt-2 w-32 bg-[#1C1633] border border-purple-900/50 rounded-lg shadow-xl py-1 z-50">
+                    <button onClick={() => { setLanguage('en'); setIsOpen(false); }} className={`w-full text-left px-4 py-2 text-sm ${language === 'en' ? 'text-pink-400' : 'hover:bg-[#2a2349]'}`}>English</button>
+                    <button onClick={() => { setLanguage('pt'); setIsOpen(false); }} className={`w-full text-left px-4 py-2 text-sm ${language === 'pt' ? 'text-pink-400' : 'hover:bg-[#2a2349]'}`}>Português</button>
                 </div>
             )}
-            {/* Minimal keyframes needed for the dropdown animation */}
-            <style>{`
-                @keyframes fade-in-down { 
-                    from { opacity: 0; transform: translateY(-10px); } 
-                    to { opacity: 1; transform: translateY(0); } 
-                }
-                .animate-fade-in-down { 
-                    animation: fade-in-down 0.2s ease-out forwards;
-                }
-            `}</style>
         </div>
     );
 };
-
-export default LanguageSwitcher;

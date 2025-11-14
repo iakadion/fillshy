@@ -1,81 +1,50 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const Intro: React.FC<{ onIntroEnd: () => void }> = ({ onIntroEnd }) => {
-    const [animationState, setAnimationState] = useState('entering');
+const BlurryBlob: React.FC<{ className: string }> = ({ className }) => (
+    <div className={`absolute rounded-full filter blur-3xl opacity-40 animate-blob ${className}`} />
+);
+
+export const Intro: React.FC<{ onFinished: () => void }> = ({ onFinished }) => {
+    const [step, setStep] = useState(0);
 
     useEffect(() => {
-        // Total animation duration:
-        // enter (1.5s) + stay (2s) + exit (1s) = 4.5s
-        const enterTimer = setTimeout(() => {
-            setAnimationState('exiting');
-        }, 3500); // 1.5s enter + 2s stay
-
-        const exitTimer = setTimeout(() => {
-            onIntroEnd();
-        }, 4500); // 3.5s + 1s exit
-
-        return () => {
-            clearTimeout(enterTimer);
-            clearTimeout(exitTimer);
-        };
-    }, [onIntroEnd]);
+        const timers = [
+            setTimeout(() => setStep(1), 200),
+            setTimeout(() => setStep(2), 3500),
+            setTimeout(() => onFinished(), 4500)
+        ];
+        return () => timers.forEach(clearTimeout);
+    }, [onFinished]);
 
     return (
-        <div className="fixed inset-0 bg-[#0B071A] z-50 flex items-center justify-center overflow-hidden">
-            {/* Animated bubbles background */}
-            <div className="absolute inset-0 filter blur-3xl">
-                <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-violet-500 rounded-full opacity-30 animate-bubble1"></div>
-                <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-pink-500 rounded-full opacity-30 animate-bubble2"></div>
-                <div className="absolute top-1/2 right-1/3 w-60 h-60 bg-indigo-500 rounded-full opacity-20 animate-bubble3"></div>
+        <div className={`fixed inset-0 bg-[#0B071A] z-50 transition-opacity duration-1000 ${step === 2 ? 'opacity-0' : 'opacity-100'}`}>
+            <div className="relative w-full h-full overflow-hidden">
+                <BlurryBlob className="bg-purple-600 top-[-10%] left-[-10%] w-96 h-96" />
+                <BlurryBlob className="bg-pink-600 top-[-10%] right-[5%] w-72 h-72" style={{animationDelay: '2s'}} />
+                <BlurryBlob className="bg-purple-400 bottom-[5%] left-[20%] w-80 h-80" style={{animationDelay: '4s'}} />
+                 <BlurryBlob className="bg-indigo-500 bottom-[-10%] right-[5%] w-96 h-96" style={{animationDelay: '2s'}} />
             </div>
-
-            <div className={`
-                flex flex-col items-center justify-center
-                transition-all duration-1000 ease-in-out
-                ${animationState === 'entering' ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}
-            `}>
-                <div className="w-24 h-24 mb-4">
-                    {/* Reusing the favicon SVG for the logo */}
-                    <svg width="100%" height="100%" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <linearGradient id="iconGradient" x1="0" y1="0" x2="1" y2="1">
-                                <stop offset="0%" stopColor="#8B5CF6" />
-                                <stop offset="100%" stopColor="#EC4899" />
-                            </linearGradient>
-                        </defs>
-                        <rect width="64" height="64" rx="12" fill="url(#iconGradient)"/>
-                        <path d="M24 18H42V24H30V30H40V36H30V46H24V18Z" fill="white"/>
-                    </svg>
+            <div className="absolute inset-0 w-full h-full flex items-center justify-center">
+                <div className={`transition-opacity duration-1000 ${step >= 1 ? 'opacity-100' : 'opacity-0'}`}>
+                     <div className="flex items-center justify-center">
+                        <div className="w-16 h-16 mr-4">
+                             <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <defs><linearGradient id="iconGradientIntro" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#8B5CF6" /><stop offset="100%" stop-color="#EC4899" /></linearGradient></defs>
+                                <rect width="64" height="64" rx="12" fill="url(#iconGradientIntro)"/>
+                                <rect x="22" y="18" width="6" height="28" fill="white" rx="3" className="opacity-0 animate-logo-bar-1" style={{ animationDelay: '0.4s' }}/>
+                                <rect x="36" y="18" width="6" height="28" fill="white" rx="3" className="opacity-0 animate-logo-bar-2" style={{ animationDelay: '0.6s' }}/>
+                            </svg>
+                        </div>
+                        <h1 className="text-6xl font-black font-heading text-white tracking-widest flex">
+                           {'fillshy'.split('').map((char, index) => (
+                                <span key={index} className="opacity-0 animate-letter-reveal" style={{ animationDelay: `${1 + index * 0.1}s` }}>
+                                    {char}
+                                </span>
+                            ))}
+                        </h1>
+                    </div>
                 </div>
-                <h1 className="text-5xl font-bold font-heading tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-pink-500">
-                    fillshy
-                </h1>
             </div>
-
-            <style>
-                {`
-                @keyframes bubble1-move {
-                    0% { transform: translate(0, 0) scale(1); }
-                    50% { transform: translate(100px, 50px) scale(1.2); }
-                    100% { transform: translate(0, 0) scale(1); }
-                }
-                @keyframes bubble2-move {
-                    0% { transform: translate(0, 0) scale(1); }
-                    50% { transform: translate(-80px, -60px) scale(0.8); }
-                    100% { transform: translate(0, 0) scale(1); }
-                }
-                 @keyframes bubble3-move {
-                    0% { transform: translate(0, 0) scale(1); }
-                    50% { transform: translate(40px, -90px) scale(1.1); }
-                    100% { transform: translate(0, 0) scale(1); }
-                }
-                .animate-bubble1 { animation: bubble1-move 12s ease-in-out infinite; }
-                .animate-bubble2 { animation: bubble2-move 15s ease-in-out infinite; }
-                .animate-bubble3 { animation: bubble3-move 10s ease-in-out infinite; }
-                `}
-            </style>
         </div>
     );
 };
-
-export default Intro;

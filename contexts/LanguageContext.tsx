@@ -7,24 +7,37 @@ type Language = 'en' | 'pt';
 interface LanguageContextType {
     language: Language;
     setLanguage: (language: Language) => void;
-    t: (key: string) => string;
+    t: (key: string, replacements?: {[key: string]: string}) => string;
 }
 
 export const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 const translations = { en, pt };
 
-// Helper to get nested keys like 'sidebar.title'
-const getTranslation = (lang: Language, key: string): string => {
+const getTranslation = (lang: Language, key: string, replacements: {[key: string]: string} = {}): string => {
     const keys = key.split('.');
     let result: any = translations[lang];
     for (const k of keys) {
         result = result?.[k];
         if (result === undefined) {
             console.warn(`Translation key "${key}" not found for language "${lang}"`);
-            return key; // Return key as fallback
+            return key; 
         }
     }
+    
+    // FIX: Ensure that the final resolved value is a string.
+    // If an incomplete key is passed (e.g., 'sidebar' instead of 'sidebar.title'),
+    // the result will be an object, which is not a valid React child.
+    if (typeof result !== 'string') {
+        console.warn(`Translation key "${key}" resolved to an object for language "${lang}". Returning key as fallback.`);
+        return key;
+    }
+    
+    // Now we know it's a string, so we can apply replacements.
+    Object.keys(replacements).forEach(placeholder => {
+        result = result.replace(`{${placeholder}}`, replacements[placeholder]);
+    });
+
     return result;
 };
 
@@ -46,8 +59,8 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
         localStorage.setItem('language', lang);
     };
     
-    const t = (key: string): string => {
-        return getTranslation(language, key);
+    const t = (key: string, replacements?: {[key: string]: string}): string => {
+        return getTranslation(language, key, replacements);
     };
 
     return (

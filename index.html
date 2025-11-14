@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0B071A" />
     
@@ -29,50 +29,85 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" rel="stylesheet">
-
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <script type="importmap">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              heading: ['Sora', 'sans-serif'],
+            },
+            keyframes: {
+              'reveal-word': {
+                'from': { opacity: '0', transform: 'translateY(10px)' },
+                'to': { opacity: '1', transform: 'translateY(0)' },
+              },
+              'letter-reveal': {
+                '0%': { opacity: 0, transform: 'translateY(20px) scale(0.8)' },
+                '100%': { opacity: 1, transform: 'translateY(0) scale(1)' },
+              },
+              'logo-bar-1': {
+                '0%': { transform: 'translateY(-40px)', opacity: 0 },
+                '100%': { transform: 'translateY(0)', opacity: 1 },
+              },
+              'logo-bar-2': {
+                '0%': { transform: 'translateY(40px)', opacity: 0 },
+                '100%': { transform: 'translateY(0)', opacity: 1 },
+              },
+              'blob-animation': {
+                '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                '100%': { transform: 'translate(0px, 0px) scale(1)' },
+              },
+              'fade-in': {
+                'from': { opacity: 0 },
+                'to': { opacity: 1 },
+              },
+            },
+            animation: {
+              'reveal-word': 'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+              'letter-reveal': 'letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+              'logo-bar-1': 'logo-bar-1 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+              'logo-bar-2': 'logo-bar-2 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+              'blob': 'blob-animation 20s infinite ease-in-out',
+              'fade-in': 'fade-in 0.3s ease-in-out',
+            }
+          }
+        }
+      }
+    </script>
+
+    <style>
+      html {
+        overflow-y: auto;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none; /* Safari and Chrome */
+      }
+    </style>
+<script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@18.2.0",
-    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-    "@google/genai": "https://esm.sh/@google/genai@0.14.0",
-    "react/": "https://esm.sh/react@18.2.0/",
-    "react-dom/": "https://esm.sh/react-dom@18.2.0/"
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1",
+    "vite": "https://aistudiocdn.com/vite@^7.2.2",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
   }
 }
 </script>
-    <style>
-      html {
-        overflow-y: scroll;
-      }
-      body {
-        font-family: 'Inter', sans-serif;
-      }
-      h1, h2, h3, h4, h5, h6, .font-heading {
-        font-family: 'Sora', sans-serif;
-      }
-      @keyframes reveal-word {
-          from {
-              opacity: 0;
-              transform: translateY(10px);
-          }
-          to {
-              opacity: 1;
-              transform: translateY(0);
-          }
-      }
-      .reveal-word {
-          display: inline-block;
-          opacity: 0;
-          animation: reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
-      }
-    </style>
 </head>
-  <body class="bg-[#0B071A] text-[#E0DDF0]">
+  <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script type="text/babel" data-type="module" data-presets="react,typescript" src="./index.tsx"></script>
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>

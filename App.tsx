@@ -1,351 +1,224 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import type { ContentItem, Category, GithubConfig, AutonomousStatus } from './types';
-import { useCategories } from './constants';
-import { fetchContentItemsForCategory, saveContentItem, getRepoDetails } from './services/githubService';
-import { generateContent, parseGeneratedText } from './services/geminiService';
-import Header from './components/Header';
-import Sidebar from './components/Sidebar';
-import ContentDisplay from './components/ContentDisplay';
-import GithubConnectModal from './components/GithubConnectModal';
-import ChangelogModal from './components/ChangelogModal';
-import Intro from './components/Intro';
-import HomePage from './components/HomePage';
-import BottomBar from './components/BottomBar';
-import DetailsPage from './components/DetailsPage';
-import SearchPage from './components/SearchPage';
 import { useTranslations } from './hooks/useTranslations';
+import { GithubConfig, Category, ContentItem, AutonomousStatus } from './types';
+import { githubService } from './services/githubService';
+import { geminiService } from './services/geminiService';
+import { CATEGORIES } from './constants';
+import { Sidebar } from './components/Sidebar';
+import { ContentDisplay } from './components/ContentDisplay';
+import { GithubConnectModal } from './components/GithubConnectModal';
+import { ChangelogModal } from './components/ChangelogModal';
+import { Intro } from './components/Intro';
+import { DetailsPage } from './components/DetailsPage';
+import { BottomBar } from './components/BottomBar';
+import { HomePage } from './components/HomePage';
 
-const App: React.FC = () => {
+export const App: React.FC = () => {
     const { t } = useTranslations();
-    const CATEGORIES = useCategories();
-
-    const [appState, setAppState] = useState<'intro' | 'homepage' | 'app' | 'search'>(
-        sessionStorage.getItem('introShown') ? 'homepage' : 'intro'
-    );
-    
-    const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-    const [contentCache, setContentCache] = useState<Record<string, ContentItem[]>>({});
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [isGenerating, setIsGenerating] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
-    const [isSidebarOpen, setSidebarOpen] = useState<boolean>(false);
-    const [isGithubModalOpen, setGithubModalOpen] = useState<boolean>(false);
-    const [isChangelogModalOpen, setChangelogModalOpen] = useState<boolean>(false);
+    const [view, setView] = useState<'intro' | 'home' | 'app'>('intro');
     const [githubConfig, setGithubConfig] = useState<GithubConfig | null>(null);
-    const [detailsItem, setDetailsItem] = useState<{item: ContentItem, category: Category} | null>(null);
-
-    // GitHub Modal State
-    const [isVerifyingGithub, setIsVerifyingGithub] = useState(false);
-    const [githubModalError, setGithubModalError] = useState<string | null>(null);
-
-    // Autonomous Mode State
-    const [isAutonomous, setIsAutonomous] = useState<boolean>(false);
-    const [autonomousStatus, setAutonomousStatus] = useState<AutonomousStatus>('inactive');
-    const [autonomousLogs, setAutonomousLogs] = useState<string[]>([]);
-    const autonomousTimerRef = useRef<number | null>(null);
-
-    const handleIntroEnd = () => {
-        setAppState('homepage');
-        sessionStorage.setItem('introShown', 'true');
-    };
-
-    const handleNavigate = (view: 'homepage' | 'app' | 'search') => {
-        setAppState(view);
-    };
+    const [isConnected, setIsConnected] = useState(false);
+    const [isConnecting, setIsConnecting] = useState(true);
+    const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
     
+    const [error, setError] = useState<string | null>(null);
+
+    const [autonomousStatus, setAutonomousStatus] = useState<AutonomousStatus>('inactive');
+    const [lastAction, setLastAction] = useState('');
+    const autonomousIntervalRef = useRef<number | null>(null);
+
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [isChangelogOpen, setIsChangelogOpen] = useState(false);
+    
+    const [detailsItem, setDetailsItem] = useState<ContentItem | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+
+    // --- Initialization ---
     useEffect(() => {
-        const savedConfigRaw = localStorage.getItem('githubConfig');
-        if (savedConfigRaw) {
-            try {
-                const savedConfig = JSON.parse(savedConfigRaw);
-                if (savedConfig.token) {
-                    if (!savedConfig.defaultBranch) {
-                        getRepoDetails(savedConfig)
-                            .then(({ defaultBranch }) => {
-                                const fullConfig = { ...savedConfig, defaultBranch };
-                                setGithubConfig(fullConfig);
-                                localStorage.setItem('githubConfig', JSON.stringify(fullConfig));
-                            })
-                            .catch(err => {
-                                console.error("Failed to validate GitHub config on startup:", err);
-                                localStorage.removeItem('githubConfig');
-                                setGithubConfig(null);
-                            });
-                    } else {
-                        setGithubConfig(savedConfig);
-                    }
-                }
-            } catch (e) {
-                console.error("Failed to parse githubConfig from localStorage", e);
-                localStorage.removeItem('githubConfig');
-            }
+        const storedConfig = localStorage.getItem('githubConfig');
+        if (storedConfig) {
+            const config = JSON.parse(storedConfig);
+            setGithubConfig(config);
+            verifyAndConnect(config);
+        } else {
+            setIsConnecting(false);
         }
     }, []);
 
-    useEffect(() => {
-        if (!selectedCategory || !githubConfig) return;
-
-        const fetchContent = async () => {
-            if (contentCache[selectedCategory.id]) return;
-
-            setIsLoading(true);
-            setError(null);
-            try {
-                const items = await fetchContentItemsForCategory(githubConfig, selectedCategory.id);
-                setContentCache(prevCache => ({ ...prevCache, [selectedCategory.id]: items }));
-            } catch (err) {
-                console.error(err);
-                setError('Failed to fetch content. The folder might be empty or non-existent.');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchContent();
-    }, [selectedCategory, githubConfig, contentCache]);
-
-    const addLog = (message: string) => {
-        const timestamp = new Date().toLocaleTimeString();
-        setAutonomousLogs(prev => [...prev.slice(-10), `${timestamp}: ${message}`]);
-    };
-
-    useEffect(() => {
-        const runAutonomousGeneration = async () => {
-            if (!githubConfig) {
-                addLog('Error: GitHub connection lost. Stopping.');
-                setAutonomousStatus('error');
-                setIsAutonomous(false);
-                return;
-            }
-
-            const randomCategory = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
-            addLog(`Generating for: ${randomCategory.name}...`);
-            setAutonomousStatus('running');
-
-            try {
-                const rawContent = await generateContent(randomCategory.prompt);
-                const { title, description } = parseGeneratedText(rawContent);
-                
-                const newItem = await saveContentItem(githubConfig, randomCategory.id, title, description);
-                addLog(`Success! Saved "${title}" in ${randomCategory.name}.`);
-
-                setContentCache(prev => ({
-                    ...prev,
-                    [randomCategory.id]: [newItem, ...(prev[randomCategory.id] || [])]
-                }));
-
-                const nextRunIn = Math.floor(Math.random() * 30000) + 30000;
-                addLog(`Next generation in ${Math.round(nextRunIn / 1000)}s.`);
-                autonomousTimerRef.current = window.setTimeout(runAutonomousGeneration, nextRunIn);
-
-            } catch (err) {
-                const errorMessage = err instanceof Error ? err.message : "Unknown error";
-                console.error("Error in autonomous mode:", err);
-                
-                if (errorMessage.includes("API") || errorMessage.includes("429") || /rate limit/i.test(errorMessage)) {
-                    addLog('API limit reached. Pausing for 60s.');
-                    setAutonomousStatus('paused');
-                    autonomousTimerRef.current = window.setTimeout(runAutonomousGeneration, 60000);
-                } else if (err instanceof TypeError && errorMessage === 'Failed to fetch') {
-                    addLog('Network failure. Retrying in 30s.');
-                    setAutonomousStatus('paused');
-                    autonomousTimerRef.current = window.setTimeout(runAutonomousGeneration, 30000);
-                } else {
-                    addLog(`Critical error: ${errorMessage}. Autonomous mode stopped.`);
-                    setAutonomousStatus('error');
-                    setIsAutonomous(false);
-                }
-            }
-        };
-
-        if (isAutonomous && githubConfig) {
-            runAutonomousGeneration();
-        } else {
-            if (autonomousTimerRef.current) {
-                clearTimeout(autonomousTimerRef.current);
-                autonomousTimerRef.current = null;
-            }
-             if (autonomousStatus !== 'inactive' && autonomousStatus !== 'error') {
-                setAutonomousStatus('inactive');
-             }
-        }
-        
-        return () => {
-            if (autonomousTimerRef.current) {
-                clearTimeout(autonomousTimerRef.current);
-            }
-        };
-    }, [isAutonomous, githubConfig, CATEGORIES]);
-
-    const handleConnectGithub = async (config: Omit<GithubConfig, 'defaultBranch'>) => {
-        if (!config.token) {
-            setGithubConfig(null);
-            localStorage.removeItem('githubConfig');
-            setIsAutonomous(false);
-            setSelectedCategory(null);
-            setContentCache({});
-            setGithubModalOpen(false);
-            return;
-        }
-
-        setIsVerifyingGithub(true);
-        setGithubModalError(null);
-
-        try {
-            const { defaultBranch } = await getRepoDetails(config);
-            const fullConfig: GithubConfig = { ...config, defaultBranch };
+    // --- GitHub Connection Logic ---
+    const verifyAndConnect = useCallback(async (config: GithubConfig) => {
+        setIsConnecting(true);
+        const result = await githubService.verifyConnection(config);
+        if (result.success && result.data) {
+            const fullConfig = { ...config, defaultBranch: result.data.default_branch };
             setGithubConfig(fullConfig);
             localStorage.setItem('githubConfig', JSON.stringify(fullConfig));
-
-            setSelectedCategory(null);
-            setContentCache({});
-            setGithubModalOpen(false);
-        } catch (err) {
-            console.error(err);
-            const errorMessage = err instanceof Error ? err.message : "Failed to connect to GitHub.";
-            setGithubModalError(errorMessage);
-        } finally {
-            setIsVerifyingGithub(false);
+            setIsConnected(true);
+        } else {
+            setIsConnected(false);
+            setError("Failed to verify GitHub connection.");
         }
+        setIsConnecting(false);
+    }, []);
+
+    const handleConnect = async (config: GithubConfig) => {
+        await verifyAndConnect(config);
     };
 
-    const handleToggleAutonomous = () => {
-        if (!githubConfig) {
-            setError("Connect to GitHub to enable autonomous mode.");
-            setGithubModalOpen(true);
+    const handleDisconnect = () => {
+        localStorage.removeItem('githubConfig');
+        setGithubConfig(null);
+        setIsConnected(false);
+        if (autonomousStatus !== 'inactive') handleToggleAutonomous();
+    };
+
+    // --- Content Generation (No fetching, just generation) ---
+    const handleGenerateContent = async (category: Category) => {
+        if (!category || !githubConfig) {
+            if (!githubConfig) setIsGithubModalOpen(true);
             return;
         }
-        setIsAutonomous(prev => !prev);
-        if (!isAutonomous) {
-            addLog("Autonomous mode started.");
-            setAutonomousStatus('running');
-        } else {
-            addLog("Autonomous mode stopped by user.");
-            setAutonomousStatus('inactive');
-        }
-    };
-    
-    const handleGenerateAndSave = async (categoryOverride?: Category) => {
-        const categoryToUse = categoryOverride || selectedCategory;
-        if (!categoryToUse || !githubConfig) return;
 
         setIsGenerating(true);
-        setError(null);
+        setLastAction(`Generating for ${t(category.name)}...`);
         try {
-            const rawContent = await generateContent(categoryToUse.prompt);
-            const { title, description } = parseGeneratedText(rawContent);
-            const newItem = await saveContentItem(githubConfig, categoryToUse.id, title, description);
-            
-            setContentCache(prev => ({
-                ...prev,
-                [categoryToUse.id]: [newItem, ...(prev[categoryToUse.id] || [])]
-            }));
-
-        } catch (err) {
-            console.error(err);
-setError(err instanceof Error ? err.message : "An unknown error occurred.");
+            const { title, content } = await geminiService.generateContent(category.prompt);
+            const result = await githubService.saveContent(githubConfig, category.id, title, content);
+            if (result.success) {
+                setLastAction(`Saved: ${title}`);
+            } else {
+                 setLastAction(`Error saving: ${result.error}`);
+                 setError(result.error || "Failed to save content.");
+                 if (autonomousStatus === 'running') setAutonomousStatus('error');
+            }
+        } catch (e) {
+            setLastAction(`Error: ${e.message}`);
+            setError(e.message);
+            if (autonomousStatus === 'running') setAutonomousStatus('error');
         } finally {
             setIsGenerating(false);
         }
     };
     
-    const handleGenerateSimilar = (category: Category) => {
-        setDetailsItem(null);
-        setAppState('app');
-        setSelectedCategory(category);
-        handleGenerateAndSave(category);
+    const handleGenerateRandom = () => {
+        if (!isConnected) {
+            setIsGithubModalOpen(true);
+            return;
+        }
+        const randomCategory = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
+        handleGenerateContent(randomCategory);
     };
 
-    const handleSelectCategory = useCallback((category: Category) => {
-        setSelectedCategory(category);
-        if (window.innerWidth < 768) {
-            setSidebarOpen(false);
-        }
-    }, []);
+    // --- Autonomous Mode Logic ---
+    const runAutonomousTask = useCallback(async () => {
+        const randomCategory = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
+        await handleGenerateContent(randomCategory);
+    }, [githubConfig, isConnected]);
 
-    const handleContentSelect = (item: ContentItem, category: Category) => {
-        setDetailsItem({ item, category });
+    const handleToggleAutonomous = () => {
+        if (autonomousStatus === 'running' || autonomousStatus === 'paused') {
+            setAutonomousStatus('inactive');
+            setLastAction('Autonomous mode stopped.');
+            if (autonomousIntervalRef.current) {
+                clearInterval(autonomousIntervalRef.current);
+                autonomousIntervalRef.current = null;
+            }
+        } else {
+            setAutonomousStatus('running');
+            setLastAction('Starting autonomous mode...');
+            runAutonomousTask(); // Run immediately
+            const intervalId = setInterval(() => {
+                runAutonomousTask();
+            }, 90000); // Average of 1.5 min
+            autonomousIntervalRef.current = intervalId as any;
+        }
+    };
+
+    // --- View/UI Logic ---
+    const handleIntroFinish = () => {
+        setView('home');
     };
     
-    const openGithubModal = () => {
-        setGithubModalError(null);
-        setGithubModalOpen(true);
+    const handleEnterApp = () => {
+        setView('app');
     };
 
-    if (appState === 'intro') {
-        return <Intro onIntroEnd={handleIntroEnd} />;
-    }
+    const handleCardClick = (item: ContentItem) => {
+        setDetailsItem(item);
+    };
 
+    const handleBackFromDetails = () => {
+        setDetailsItem(null);
+    }
+    
+    // --- Render Logic ---
+    if (view === 'intro') {
+        return <Intro onFinished={handleIntroFinish} />;
+    }
+    
     if (detailsItem) {
-        return <DetailsPage item={detailsItem.item} category={detailsItem.category} onBack={() => setDetailsItem(null)} onGenerateSimilar={handleGenerateSimilar} />;
+        const category = CATEGORIES.find(c => c.id === detailsItem.category) || CATEGORIES[0];
+        return <DetailsPage 
+                    item={detailsItem} 
+                    category={category} 
+                    onBack={handleBackFromDetails}
+                    onGenerateSimilar={handleGenerateContent}
+                />;
+    }
+    
+    if (view === 'home') {
+        return <>
+            <HomePage 
+                onEnterApp={handleEnterApp} 
+                onCardClick={handleCardClick} 
+                onGenerateRandom={handleGenerateRandom}
+                isConnected={isConnected}
+                onConnect={() => setIsGithubModalOpen(true)}
+            />
+            <BottomBar onGenerate={handleGenerateRandom} />
+        </>;
     }
 
-    if (appState === 'search') {
-        return <SearchPage onBack={() => setAppState('homepage')} />;
-    }
-
+    // App View
     return (
-        <>
-            {appState === 'homepage' && <HomePage onNavigateToApp={() => handleNavigate('app')} onContentSelect={handleContentSelect} />}
-
-            {appState === 'app' && (
-                <div className="flex h-screen bg-[#0B071A] font-sans relative">
-                    <Sidebar 
-                        categories={CATEGORIES}
+        <div className="flex h-screen bg-[#0B071A] p-0 md:p-2 md:gap-2">
+            <div className="hidden md:flex md:w-64">
+                 <Sidebar
+                    selectedCategory={selectedCategory}
+                    onSelectCategory={setSelectedCategory}
+                    isConnected={isConnected}
+                    onConnect={() => setIsGithubModalOpen(true)}
+                    autonomousStatus={autonomousStatus}
+                    onToggleAutonomous={handleToggleAutonomous}
+                    lastAction={lastAction}
+                    onShowChangelog={() => setIsChangelogOpen(true)}
+                />
+            </div>
+           
+            <main className="flex-1 flex flex-col overflow-hidden">
+                 <div className="flex-1 overflow-y-auto">
+                    <ContentDisplay
+                        isLoading={isConnecting}
+                        error={error}
+                        isConnected={isConnected}
+                        onConnect={() => setIsGithubModalOpen(true)}
+                        onGenerate={handleGenerateContent}
+                        onCardClick={handleCardClick}
                         selectedCategory={selectedCategory}
-                        onSelectCategory={handleSelectCategory}
-                        isOpen={isSidebarOpen}
-                        setIsOpen={setSidebarOpen}
-                        onOpenGithubModal={openGithubModal}
-                        isGithubConnected={!!githubConfig?.token}
-                        isAutonomous={isAutonomous}
-                        onToggleAutonomous={handleToggleAutonomous}
-                        autonomousStatus={autonomousStatus}
-                        autonomousLogs={autonomousLogs}
-                        onOpenChangelog={() => setChangelogModalOpen(true)}
-                    />
-                    <div className="flex-1 flex flex-col overflow-hidden relative transition-all duration-300 ease-in-out md:pl-24">
-                        <Header 
-                            categoryName={selectedCategory?.name || t('header.selectCategory')}
-                        />
-                        <main className="flex-1 overflow-y-auto bg-[#1A1433]/50 p-4 sm:p-6 lg:p-8 pt-28 pb-24">
-                           <ContentDisplay
-                                category={selectedCategory}
-                                content={selectedCategory ? contentCache[selectedCategory.id] || [] : []}
-                                isLoading={isLoading}
-                                error={error}
-                                githubConfig={githubConfig}
-                                onOpenGithubModal={openGithubModal}
-                                onGenerate={() => handleGenerateAndSave()}
-                                isGenerating={isGenerating}
-                                isAutonomous={isAutonomous}
-                                onContentSelect={(item) => handleContentSelect(item, selectedCategory!)}
-                            />
-                        </main>
-                    </div>
-                     <GithubConnectModal
-                        isOpen={isGithubModalOpen}
-                        onClose={() => setGithubModalOpen(false)}
-                        onConnect={handleConnectGithub}
-                        initialConfig={githubConfig}
-                        isVerifying={isVerifyingGithub}
-                        error={githubModalError}
-                    />
-                     <ChangelogModal 
-                        isOpen={isChangelogModalOpen}
-                        onClose={() => setChangelogModalOpen(false)}
                     />
                 </div>
-            )}
+            </main>
             
-            <BottomBar 
-                activeView={appState} 
-                onNavigate={handleNavigate}
-                isSidebarOpen={isSidebarOpen}
-                setSidebarOpen={setSidebarOpen}
+            <BottomBar onGenerate={handleGenerateRandom} />
+
+            <GithubConnectModal
+                isOpen={isGithubModalOpen}
+                onClose={() => setIsGithubModalOpen(false)}
+                onConnect={handleConnect}
+                onDisconnect={handleDisconnect}
+                initialConfig={githubConfig}
             />
-        </>
+            <ChangelogModal isOpen={isChangelogOpen} onClose={() => setIsChangelogOpen(false)} />
+        </div>
     );
 };
-
-export default App;
