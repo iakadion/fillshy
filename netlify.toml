@@ -1,11 +1,1 @@
-[build]
-  # Pasta onde está o index.html gerado
-  publish = "dist"
-  # Comando de build (ajuste conforme seu projeto)
-  command = "npm run build"
 
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = true
