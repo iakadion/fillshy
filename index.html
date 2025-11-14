@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0B071A" />
     
-    <!-- SEO and Social Sharing Meta Tags -->
+    <!-- SEO and Social Sharing Meta Tags (originais) -->
     <title>fillshy - Autonomous AI Content Pipeline</title>
     <meta
       name="description"
@@ -28,17 +28,17 @@
     <meta property="twitter:description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
     <meta property="twitter:image" content="/social-preview.png" />
 
-    <!-- Extra SEO -->
-    <meta name="keywords" content="AI, content pipeline, automation, GitHub, fillshy" />
+    <!-- SEO extra (acrescentei, sem remover nada) -->
+    <meta name="keywords" content="fillshy, AI, autonomous, content pipeline, GitHub, automation" />
     <meta name="author" content="fillshy" />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index,follow" />
 
-    <!-- Preconnect / Fonts -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" rel="stylesheet">
     
-    <!-- Tailwind via CDN (mantido) -->
+    <!-- Tailwind (mantido) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -102,7 +102,7 @@
       }
     </style>
 
-    <!-- IMPORT MAP (mantido, mas complementado) -->
+    <!-- Import map original (mantido) + complementos para dev -->
     <script type="importmap">
     {
       "imports": {
@@ -111,9 +111,9 @@
         "react-dom/client": "https://esm.sh/react-dom@18.3.1/client?dev",
         "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime?dev",
 
-        "react/": "https://aistudiocdn.com/react@^19.2.0/",
+        "react": "https://aistudiocdn.com/react@^19.2.0",
         "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-
+        "react/": "https://aistudiocdn.com/react@^19.2.0/",
         "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1",
         "vite": "https://aistudiocdn.com/vite@^7.2.2",
         "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
@@ -121,186 +121,142 @@
     }
     </script>
 
-    <!-- SystemJS (para lidar com módulos e caminhos relativos) -->
+    <!-- SystemJS para resolver caminhos relativos e módulos -->
     <script src="https://cdn.jsdelivr.net/npm/systemjs@6.15.1/dist/system.min.js" crossorigin="anonymous"></script>
 
-    <!-- Babel Standalone para TS/TSX + React -->
+    <!-- Babel Standalone para TS/TSX -->
     <script src="https://unpkg.com/@babel/standalone@7.26.0/babel.min.js" crossorigin="anonymous"></script>
 
-    <!-- Babel Presets/plugins para TSX -->
+    <!-- Configuração Babel para TS/TSX + React -->
     <script>
-      // Pré-configuração do Babel para TypeScript + React (automatic jsx runtime)
       window.BABEL_TSX_OPTIONS = {
         presets: [
           ["typescript", { allExtensions: true, isTSX: true }],
           ["react", { runtime: "automatic", importSource: "react" }]
         ],
-        plugins: [],
         sourceMaps: "inline"
       };
     </script>
 
-  </head>
-  <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-
-    <!-- Bootloader: baixa index.tsx, transpila, cria Blob navegável e carrega via SystemJS -->
+    <!-- Bootloader: foca em /index.tsx, transpila, segue todos os imports TS/TSX -->
     <script type="module">
-      // Caminho principal do seu entrypoint TSX
       const ENTRY_TSX = "/index.tsx";
+      const moduleBlobMap = new Map();
 
-      // Cache simples em memória para módulos já transpILADOS
-      const moduleCache = new Map();
-
-      /**
-       * Transpila código TS/TSX usando Babel Standalone.
-       */
       function transpileTSX(sourceCode, sourceUrl) {
-        const { code } = Babel.transform(sourceCode, {
+        const result = Babel.transform(sourceCode, {
           ...window.BABEL_TSX_OPTIONS,
-          filename: sourceUrl,
+          filename: sourceUrl
         });
-        return code;
+        return result.code;
       }
 
-      /**
-       * Cria um Blob URL ESModule a partir de código JS.
-       */
-      function createModuleBlobUrl(jsCode) {
+      function createBlobUrl(jsCode) {
         const blob = new Blob([jsCode], { type: "application/javascript" });
         return URL.createObjectURL(blob);
       }
 
-      /**
-       * Resolve caminho relativo a partir de um baseURL.
-       */
-      function resolveRelative(fromUrl, relativePath) {
-        return new URL(relativePath, fromUrl).toString();
+      function resolveRelative(fromUrl, specifier) {
+        return new URL(specifier, fromUrl).toString();
       }
 
-      /**
-       * Carrega (fetch), transpila e registra um módulo TS/TSX/JS para SystemJS.
-       */
-      async function loadAndRegisterModule(moduleUrl) {
-        if (moduleCache.has(moduleUrl)) {
-          return moduleCache.get(moduleUrl);
+      async function ensureModuleBlob(moduleUrl) {
+        if (moduleBlobMap.has(moduleUrl)) {
+          return moduleBlobMap.get(moduleUrl);
         }
 
         const res = await fetch(moduleUrl);
         if (!res.ok) {
-          throw new Error(`Falha ao baixar módulo: ${moduleUrl} (${res.status})`);
+          throw new Error(`Falha ao carregar módulo: ${moduleUrl} (${res.status})`);
         }
 
         const source = await res.text();
-        let jsCode;
+        let jsCode = source;
 
-        // Estratégia simples: se terminar com .ts/.tsx, transpila; se .js, deixa como está.
+        // Se for TS/TSX, transpila
         if (moduleUrl.endsWith(".ts") || moduleUrl.endsWith(".tsx")) {
           jsCode = transpileTSX(source, moduleUrl);
-        } else {
-          jsCode = source;
         }
 
-        const blobUrl = createModuleBlobUrl(jsCode);
-
-        // Registra o blobUrl no SystemJS para esse moduleUrl "virtual".
-        SystemJS.registry.set(moduleUrl, SystemJS.newModule({}));
-
-        // Mapeia o moduleUrl para o blob real
-        SystemJS.set(moduleUrl, SystemJS.newModule({}));
-
-        // Truque: delega import real para o blobUrl
-        const importBlobModule = async () => System.import(blobUrl);
-        moduleCache.set(moduleUrl, importBlobModule);
-
-        return importBlobModule;
+        const blobUrl = createBlobUrl(jsCode);
+        moduleBlobMap.set(moduleUrl, blobUrl);
+        return blobUrl;
       }
 
-      /**
-       * Hook no SystemJS para resolver imports relativos como ./App
-       * e aplicar o processo de download + transpile + blob.
-       */
-      SystemJS.resolve = function (id, parentUrl) {
-        // Se o import é relativo, resolvemos contra o parentUrl.
-        if (id.startsWith("./") || id.startsWith("../")) {
-          const resolved = resolveRelative(parentUrl, id);
+      // Integra SystemJS para resolver imports relativos e usar Blob
+      const originalResolve = System.resolve || SystemJS.resolve;
+      SystemJS.resolve = function (specifier, parentUrl) {
+        // Import relativo (./, ../)
+        if (specifier.startsWith("./") || specifier.startsWith("../")) {
+          const resolved = resolveRelative(parentUrl, specifier);
 
-          // Para TSX/TS sem extensão explícita, assume ".tsx" por padrão.
-          if (!/\.[tj]sx?$/.test(resolved)) {
-            // Ex: ./App -> ./App.tsx
+          // Se não tem extensão .js/.ts/.tsx, assume .tsx (App, Home, etc.)
+          if (!/\.(js|ts|tsx)$/.test(resolved)) {
             return resolved + ".tsx";
           }
           return resolved;
         }
 
-        // Para imports absolutos relativos ao host ("/algo")
-        if (id.startsWith("/")) {
-          return id;
+        // Import começando com / vai direto (assumimos arquivo estático)
+        if (specifier.startsWith("/")) {
+          return specifier;
         }
 
-        // Para imports em importmap (react, react-dom, etc.), deixa SystemJS
-        // delegar para o importmap do navegador.
-        return id;
+        // Outros (react, react-dom, etc.) o navegador resolve via importmap
+        return specifier;
       };
 
-      // Override de SystemJS.instantiate para interceptar o carregamento.
-      const originalInstantiate = SystemJS.instantiate;
-      SystemJS.instantiate = async function (url, parentUrl) {
-        // Se for URL http(s) ou relativo, fazemos o pipeline TSX
-        if (
-          /^https?:\/\//.test(url) ||
-          url.startsWith("/") ||
-          url.startsWith("./") ||
-          url.startsWith("../")
-        ) {
-          const loader = await loadAndRegisterModule(url);
-          const mod = await loader();
-          return [[], function (_export) {
-            Object.keys(mod).forEach(k => _export(k, mod[k]));
-            return {};
-          }];
+      const originalFetch = SystemJS.fetch || System.fetch;
+      SystemJS.fetch = async function (url, options) {
+        // Se for nosso arquivo local (.ts, .tsx ou .js relativo), usamos pipeline TSX
+        const isLocalTs = url.endsWith(".ts") || url.endsWith(".tsx");
+        const isLocalJs = url.startsWith("/") && url.endsWith(".js");
+
+        if (isLocalTs || isLocalJs) {
+          const blobUrl = await ensureModuleBlob(url);
+          return fetch(blobUrl, options);
         }
 
-        // Fallback para comportamento padrão
-        return originalInstantiate.call(this, url, parentUrl);
+        // Para libs externas (esm.sh, aistudiocdn, etc.), fetch normal
+        return originalFetch ? originalFetch(url, options) : fetch(url, options);
       };
 
-      /**
-       * Entry: baixa index.tsx, transpila, cria Blob e importa.
-       */
       (async function bootstrap() {
         try {
+          // Foca em /index.tsx: baixa, transpila, cria blob e importa
           const entryUrl = new URL(ENTRY_TSX, window.location.origin).toString();
-          const loader = await loadAndRegisterModule(entryUrl);
-          await loader(); // O próprio index.tsx deve fazer ReactDOM.render/createRoot
-
-          // Exemplo esperado de index.tsx:
+          const entryBlob = await ensureModuleBlob(entryUrl);
+          await System.import(entryBlob);
+          // O próprio index.tsx é quem deve pegar o #root e renderizar o App:
           //
           // import React from "react";
           // import ReactDOM from "react-dom/client";
-          // import App from "./App";
+          // import App from "./App"; // ./App será resolvido para /App.tsx
           //
           // const root = ReactDOM.createRoot(
           //   document.getElementById("root") as HTMLElement
           // );
           // root.render(<App />);
-        } catch (err) {
-          console.error("Erro ao inicializar a aplicação", err);
+        } catch (error) {
+          console.error("Erro ao inicializar a aplicação", error);
           const root = document.getElementById("root");
           if (root) {
             root.innerHTML = `
-              <div style="padding:16px;color:#f87171;font-family:monospace;">
+              <div style="padding:16px;color:#f97373;font-family:monospace;">
                 Erro ao inicializar a aplicação:<br/>
-                <pre>${String(err)}</pre>
+                <pre>${String(error)}</pre>
               </div>
             `;
           }
         }
       })();
     </script>
+  </head>
+  <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
 
-    <!-- Mantido: script original de referência (não removi, apenas deixou de ser necessário) -->
+    <!-- Mantido conforme você pediu, embora o bootloader já cuide do index.tsx -->
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
