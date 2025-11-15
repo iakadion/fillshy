@@ -33,7 +33,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap"></noscript>
 
-  <!-- Prevenção de FOUC -->
+  <!-- Prevenção de FOUC (Flash of Unstyled Content) -->
   <style>body { visibility: hidden; opacity: 0; }</style>
 
   <!-- Tailwind CDN (síncrono para injeção precoce de CSS, evitando quebra) -->
@@ -100,16 +100,16 @@
 
   <!-- Import map das libs -->
   <script type="importmap">
-  {
-    "imports": {
-      "react": "https://esm.sh/react@18.2.0",
-      "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-      "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-      "@google/generative-ai": "https://esm.sh/@google/generative-ai@0.14.0",
-      "esbuild-wasm": "https://esm.sh/esbuild-wasm@0.23.1"
-    }
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "@google/generative-ai": "https://esm.sh/@google/generative-ai@0.14.0",
+    "esbuild-wasm": "https://esm.sh/esbuild-wasm@0.23.1"
   }
-  </script>
+}
+</script>
 
   <!-- Estilos inline para tela de loading (replicando animações do Tailwind independentemente) -->
   <style>
@@ -169,10 +169,11 @@
 
   <div id="root"></div>
 
-  <!-- ✅ INÍCIO DO SCRIPT CORRIGIDO -->
+  <!-- ======================= INÍCIO DO SCRIPT CORRIGIDO ======================= -->
   <script type="module">
     import * as esbuild from 'esbuild-wasm';
 
+    // O plugin para resolver imports no navegador continua o mesmo
     async function browserResolver() {
       return {
         name: 'browser-resolver',
@@ -203,13 +204,18 @@
       };
     }
 
+    // Função auto-executável para carregar e rodar a aplicação
     (async () => {
       const rootEl = document.getElementById('root');
       try {
-        // A chamada 'esbuild.initialize' foi removida. A biblioteca agora
-        // inicializa automaticamente o WebAssembly na primeira chamada de `build`.
+        // CORREÇÃO: A linha "await esbuild.initialize(...)" foi REMOVIDA.
+        // A inicialização agora é implícita na primeira chamada da API (build/transform).
 
+        // CORREÇÃO: As opções de inicialização (wasmURL, worker) foram MOVIDAS
+        // para dentro do objeto de configuração de `esbuild.build()`.
         const result = await esbuild.build({
+          wasmURL: 'https://esm.sh/esbuild-wasm@0.23.1/esbuild.wasm',
+          worker: false,
           entryPoints: [new URL('/index.tsx', window.location.origin).toString()],
           bundle: true,
           write: false,
@@ -233,6 +239,7 @@
         console.error('Falha ao inicializar a aplicação:', error);
         rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p></div>`;
       } finally {
+        // Garante que a tela de loading seja sempre removida
         document.getElementById('loading').remove();
         document.body.style.transition = 'opacity 0.2s ease-in-out';
         document.body.style.visibility = 'visible';
@@ -240,6 +247,6 @@
       }
     })();
   </script>
-  <!-- ⏹️ FIM DO SCRIPT CORRIGIDO -->
+  <!-- ======================== FIM DO SCRIPT CORRIGIDO ========================= -->
 </body>
 </html>
