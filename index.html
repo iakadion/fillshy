@@ -6,30 +6,34 @@
     <meta name="viewport" content="width=device-width, initial-scale-1.0" />
     <meta name="theme-color" content="#0B071A" />
     
-    <!-- SEO e Metatags (Não bloqueantes) -->
+    <!-- SEO e Metatags -->
     <title>fillshy - Autonomous AI Content Pipeline</title>
     <meta name="description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
     <!-- ... (outras metatags) ... -->
 
-    <!-- OTIMIZAÇÃO: Pré-conexão para acelerar o início do download -->
+    <!-- Otimizações de rede -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://unpkg.com">
     <link rel="preconnect" href="https://esm.sh">
 
-    <!-- OTIMIZAÇÃO: Carregamento de fontes não-bloqueante -->
+    <!-- Carregamento de fontes não-bloqueante -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap"></noscript>
     
-    <!-- OTIMIZAÇÃO: Prevenção do "Flash of Unstyled Content" (FOUC) -->
-    <style>body { visibility: hidden; opacity: 0; transition: opacity 0.2s ease-in-out; }</style>
+    <!-- Prevenção de FOUC -->
+    <style>body { visibility: hidden; opacity: 0; }</style>
 
-    <!-- OTIMIZAÇÃO: Tailwind e Babel com `defer` para não bloquear a renderização -->
+    <!--
+      ORDEM DE SCRIPTS CORRIGIDA:
+      - Tailwind pode ser 'defer' pois é independente.
+      - Babel NÃO PODE ser 'defer' pois nosso script principal depende dele.
+    -->
     <script src="https://cdn.tailwindcss.com" defer></script>
-    <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js" defer></script>
+    <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
 
-    <!-- Config do Tailwind (precisa vir antes do script principal) -->
+    <!-- Config do Tailwind e Import Map -->
     <script>
       tailwind.config = {
         theme: {
@@ -42,15 +46,13 @@
         plugins: [ function({addUtilities}){addUtilities({'.scrollbar-hide':{'-ms-overflow-style':'none','scrollbar-width':'none','&::-webkit-scrollbar':{display:'none'}}})} ]
       }
     </script>
-    
-    <!-- Import maps (não bloqueante) -->
     <script type="importmap">
     {
       "imports": {
         "react": "https://esm.sh/react@18.2.0",
         "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
         "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-        "@google/genai": "https://esm.sh/ga/@google/genai@0.14.0"
+        "@google/genai": "https://esm.sh/@google/genai@0.14.0"
       }
     }
     </script>
@@ -59,7 +61,7 @@
     <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
     <div id="root"></div>
 
-    <!-- O seu script de carregamento, que agora executa em um ambiente otimizado -->
+    <!-- Script principal (a lógica interna está correta) -->
     <script type="module">
         const blobCache = new Map();
 
@@ -119,7 +121,8 @@
                 console.error('Falha ao inicializar a aplicação:', error);
                 rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p></div>`;
             } finally {
-                // OTIMIZAÇÃO: Torna o corpo visível APENAS quando tudo estiver pronto
+                // Torna o corpo visível APENAS quando tudo estiver pronto
+                document.body.style.transition = 'opacity 0.2s ease-in-out';
                 document.body.style.visibility = 'visible';
                 document.body.style.opacity = '1';
             }
