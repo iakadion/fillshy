@@ -22,11 +22,11 @@
   <meta property="twitter:description"
         content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
 
-  <!-- Otimizações de rede: Preconnects adicionais para CDNs usados -->
+  <!-- Otimizações de rede: Preconnects para todos os CDNs usados -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdn.tailwindcss.com">
-  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="preconnect" href="https://esm.sh">
 
   <!-- Fonts com carregamento não-bloqueante -->
@@ -36,7 +36,7 @@
   <!-- Prevenção de FOUC -->
   <style>body { visibility: hidden; opacity: 0; }</style>
 
-  <!-- Tailwind CDN (síncrono para CSS early injection) -->
+  <!-- Tailwind CDN (síncrono para injeção precoce de CSS, evitando quebra) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -98,6 +98,9 @@
     }
   </script>
 
+  <!-- Sucrase UMD para transpilação rápida (alternativa mais rápida ao Babel) -->
+  <script src="https://cdn.jsdelivr.net/npm/sucrase@3.35.0/dist/umd/sucrase.js"></script>
+
   <!-- Import map das libs -->
   <script type="importmap">
 {
@@ -105,13 +108,12 @@
     "react": "https://esm.sh/react@18.2.0",
     "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
     "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-    "@google/genai": "https://esm.sh/@google/genai@0.14.0",
-    "esbuild-wasm": "https://unpkg.com/esbuild-wasm@latest"
+    "@google/genai": "https://esm.sh/@google/genai@0.14.0"
   }
 }
 </script>
 
-  <!-- Estilos inline para tela de loading (replicando animações do Tailwind) -->
+  <!-- Estilos inline para tela de loading (replicando animações do Tailwind independentemente) -->
   <style>
     html { overflow-y: auto; }
     @keyframes blob-animation {
@@ -134,40 +136,41 @@
     .letter { display: inline-block; }
   </style>
 
-  <!-- Preloads adicionais para aceleração -->
+  <!-- Preloads e modulepreloads para aceleração (carrega recursos em paralelo cedo) -->
   <link rel="preload" href="/index.tsx" as="fetch" crossorigin="anonymous" />
+  <link rel="preload" href="https://cdn.tailwindcss.com" as="script" />
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/sucrase@3.35.0/dist/umd/sucrase.js" as="script" />
   <link rel="modulepreload" href="https://esm.sh/react@18.2.0" />
   <link rel="modulepreload" href="https://esm.sh/react-dom@18.2.0/client" />
-  <link rel="modulepreload" href="https://unpkg.com/esbuild-wasm@latest" />
-  <link rel="preload" href="https://unpkg.com/esbuild-wasm@latest/esbuild.wasm" as="fetch" crossorigin="anonymous" />
+  <link rel="modulepreload" href="https://esm.sh/react@18.2.0/jsx-runtime" />
+  <link rel="modulepreload" href="https://esm.sh/@google/genai@0.14.0" />
+  <link rel="prefetch" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" as="style" />
 </head>
 <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
   <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
 
-  <!-- Tela de loading com animações replicadas -->
+  <!-- Tela de loading com animações replicadas (aparece imediatamente) -->
   <div id="loading" class="fixed inset-0 bg-[#0B071A] flex flex-col items-center justify-center z-50 animate-fade-in">
     <div class="relative w-32 h-32 mb-4">
       <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full filter blur-xl opacity-70 animate-blob"></div>
     </div>
     <div class="text-3xl font-heading text-[#E0DDF0]">
-      <span class="letter" style="animation-delay: 0s;">L</span>
-      <span class="letter" style="animation-delay: 0.1s;">o</span>
-      <span class="letter" style="animation-delay: 0.2s;">a</span>
-      <span class="letter" style="animation-delay: 0.3s;">d</span>
-      <span class="letter" style="animation-delay: 0.4s;">i</span>
-      <span class="letter" style="animation-delay: 0.5s;">n</span>
-      <span class="letter" style="animation-delay: 0.6s;">g</span>
-      <span class="letter" style="animation-delay: 0.7s;">.</span>
-      <span class="letter" style="animation-delay: 0.8s;">.</span>
-      <span class="letter" style="animation-delay: 0.9s;">.</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0s;">L</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0.1s;">o</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0.2s;">a</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0.3s;">d</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0.4s;">i</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0.5s;">n</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0.6s;">g</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0.7s;">.</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0.8s;">.</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0.9s;">.</span>
     </div>
   </div>
 
   <div id="root"></div>
 
   <script type="module">
-    import * as esbuild from 'esbuild-wasm';
-
     const blobCache = new Map();
 
     async function loadSource(path, parentUrl) {
@@ -178,7 +181,7 @@
         return { absoluteUrl: baseUrl, sourceCode: await res.text() };
       }
       const base = baseUrl.replace(/\/$/, '');
-      const candidates = [base + '.tsx', base + '.ts', base + '/index.tsx', base + '/index.ts'];
+      const candidates = [ base + '.tsx', base + '.ts', base + '/index.tsx', base + '/index.ts' ];
       for (const url of candidates) {
         try {
           const res = await fetch(url);
@@ -207,16 +210,13 @@
       for (const [originalPath, blobUrl] of dependencies.entries()) {
         transformedCode = transformedCode.replace(new RegExp(`(['"])${originalPath}\\1`, 'g'), `$1${blobUrl}$1`);
       }
-      const loader = absoluteUrl.endsWith('.tsx') || absoluteUrl.endsWith('.jsx') ? 'tsx' : 'ts';
-      const result = await esbuild.transform(transformedCode, {
-        loader: loader,
-        jsx: 'automatic',
+      // Transpila com Sucrase (mais rápido que Babel)
+      const { code } = Sucrase.transform(transformedCode, {
+        transforms: ['typescript', 'jsx'],
+        jsxRuntime: 'automatic',
         jsxImportSource: 'react',
-        target: 'es2020',
-        format: 'esm',
-        sourcemap: false
+        filePath: absoluteUrl
       });
-      const code = result.code;
       const blobUrl = URL.createObjectURL(new Blob([code], { type: 'application/javascript' }));
       blobCache.set(absoluteUrl, blobUrl);
       return blobUrl;
@@ -225,16 +225,14 @@
     (async () => {
       const rootEl = document.getElementById('root');
       try {
-        await esbuild.initialize({
-          wasmURL: 'https://unpkg.com/esbuild-wasm@latest/esbuild.wasm'
-        });
         const entryModuleUrl = await resolveAndTranspile('/index.tsx');
         await import(entryModuleUrl);
-        document.getElementById('loading').remove();
       } catch (error) {
         console.error('Falha ao inicializar a aplicação:', error);
         rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p></div>`;
       } finally {
+        // Remove loading e mostra o body
+        document.getElementById('loading').remove();
         document.body.style.transition = 'opacity 0.2s ease-in-out';
         document.body.style.visibility = 'visible';
         document.body.style.opacity = '1';
