@@ -138,12 +138,13 @@
   <link rel="preload" href="/index.tsx" as="fetch" crossorigin="anonymous" />
   <link rel="preload" href="https://cdn.tailwindcss.com" as="script" />
   <link rel="modulepreload" href="https://unpkg.com/esbuild-wasm@latest" />
-  <link rel="preload" href="https://unpkg.com/esbuild-wasm@latest/esbuild.wasm" as="fetch" crossorigin="anonymous" />
+  <link rel="preload" href="https://unpkg.com/esbuild-wasm@latest/esbuild.wasm" as="fetch" crossorigin="anonymous" fetchpriority="high" />
   <link rel="modulepreload" href="https://esm.sh/react@18.2.0" />
   <link rel="modulepreload" href="https://esm.sh/react-dom@18.2.0/client" />
   <link rel="modulepreload" href="https://esm.sh/react@18.2.0/jsx-runtime" />
   <link rel="modulepreload" href="https://esm.sh/@google/genai@0.14.0" />
   <link rel="prefetch" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" as="style" />
+  <!-- Adicione preloads para dependências comuns se conhecidas, ex: <link rel="preload" href="/algum-componente.tsx" as="fetch" /> -->
 </head>
 <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
   <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
@@ -177,7 +178,7 @@
     async function loadSource(path, parentUrl) {
       const baseUrl = new URL(path, parentUrl).href;
       if (/\.(tsx?|jsx?)($|\?)/.test(baseUrl)) {
-        const res = await fetch(baseUrl);
+        const res = await fetch(baseUrl, { cache: 'force-cache' }); // Força cache para fetches repetidos
         if (!res.ok) throw new Error('Não foi possível carregar ' + baseUrl);
         return { absoluteUrl: baseUrl, sourceCode: await res.text() };
       }
@@ -185,7 +186,7 @@
       const candidates = [ base + '.tsx', base + '.ts', base + '/index.tsx', base + '/index.ts' ];
       for (const url of candidates) {
         try {
-          const res = await fetch(url);
+          const res = await fetch(url, { cache: 'force-cache' });
           if (res.ok) return { absoluteUrl: url, sourceCode: await res.text() };
         } catch (_) {}
       }
@@ -229,17 +230,29 @@
     (async () => {
       const rootEl = document.getElementById('root');
       try {
+        // Otimização: Use worker para offload transpiling
         await esbuild.initialize({
-          wasmURL: 'https://unpkg.com/esbuild-wasm@latest/esbuild.wasm'
+          wasmURL: 'https://unpkg.com/esbuild-wasm@latest/esbuild.wasm',
+          worker: true // Roda em Web Worker para não bloquear main thread
         });
         const entryModuleUrl = await resolveAndTranspile('/index.tsx');
         await import(entryModuleUrl);
+        
+        // Registro de service worker para caching agressivo em loads futuros
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('/sw.js') // Assuma um sw.js simples para cache de wasm e deps
+            .then(reg => console.log('SW registered', reg))
+            .catch(err => console.error('SW registration failed', err));
+        }
       } catch (error) {
         console.error('Falha ao inicializar a aplicação:', error);
         rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p></div>`;
       } finally {
-        document.getElementById('loading').remove();
-        document.body.style.transition = 'opacity 0.2s ease-in-out';
+        const loadingEl = document.getElementById('loading');
+        loadingEl.style.transition = 'opacity 0.1s ease-out'; // Fade mais rápido
+        loadingEl.style.opacity = '0';
+        setTimeout(() => loadingEl.remove(), 100);
+        document.body.style.transition = 'opacity 0.1s ease-in-out';
         document.body.style.visibility = 'visible';
         document.body.style.opacity = '1';
       }
