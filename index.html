@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdn.tailwindcss.com">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://unpkg.com">
   <link rel="preconnect" href="https://esm.sh">
 
   <!-- Fonts com carregamento não-bloqueante -->
@@ -105,7 +105,8 @@
     "react": "https://esm.sh/react@18.2.0",
     "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
     "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-    "@google/genai": "https://esm.sh/@google/genai@0.14.0"
+    "@google/genai": "https://esm.sh/@google/genai@0.14.0",
+    "esbuild-wasm": "https://unpkg.com/esbuild-wasm@latest"
   }
 }
 </script>
@@ -136,7 +137,8 @@
   <!-- Preloads e modulepreloads para aceleração (carrega recursos em paralelo cedo) -->
   <link rel="preload" href="/index.tsx" as="fetch" crossorigin="anonymous" />
   <link rel="preload" href="https://cdn.tailwindcss.com" as="script" />
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/sucrase@3.35.0/+esm" />
+  <link rel="modulepreload" href="https://unpkg.com/esbuild-wasm@latest" />
+  <link rel="preload" href="https://unpkg.com/esbuild-wasm@latest/esbuild.wasm" as="fetch" crossorigin="anonymous" />
   <link rel="modulepreload" href="https://esm.sh/react@18.2.0" />
   <link rel="modulepreload" href="https://esm.sh/react-dom@18.2.0/client" />
   <link rel="modulepreload" href="https://esm.sh/react@18.2.0/jsx-runtime" />
@@ -168,7 +170,7 @@
   <div id="root"></div>
 
   <script type="module">
-    import { transform } from 'https://cdn.jsdelivr.net/npm/sucrase@3.35.0/+esm';
+    import * as esbuild from 'esbuild-wasm';
 
     const blobCache = new Map();
 
@@ -209,13 +211,16 @@
       for (const [originalPath, blobUrl] of dependencies.entries()) {
         transformedCode = transformedCode.replace(new RegExp(`(['"])${originalPath}\\1`, 'g'), `$1${blobUrl}$1`);
       }
-      // Transpila com Sucrase (mais rápido que Babel)
-      const { code } = transform(transformedCode, {
-        transforms: ['typescript', 'jsx'],
-        jsxRuntime: 'automatic',
-        production: true,
-        filePath: absoluteUrl
+      const loader = absoluteUrl.endsWith('.tsx') || absoluteUrl.endsWith('.jsx') ? 'tsx' : 'ts';
+      const result = await esbuild.transform(transformedCode, {
+        loader: loader,
+        jsx: 'automatic',
+        jsxImportSource: 'react',
+        target: 'es2020',
+        format: 'esm',
+        sourcemap: false
       });
+      const code = result.code;
       const blobUrl = URL.createObjectURL(new Blob([code], { type: 'application/javascript' }));
       blobCache.set(absoluteUrl, blobUrl);
       return blobUrl;
@@ -224,13 +229,15 @@
     (async () => {
       const rootEl = document.getElementById('root');
       try {
+        await esbuild.initialize({
+          wasmURL: 'https://unpkg.com/esbuild-wasm@latest/esbuild.wasm'
+        });
         const entryModuleUrl = await resolveAndTranspile('/index.tsx');
         await import(entryModuleUrl);
       } catch (error) {
         console.error('Falha ao inicializar a aplicação:', error);
         rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p></div>`;
       } finally {
-        // Remove loading e mostra o body
         document.getElementById('loading').remove();
         document.body.style.transition = 'opacity 0.2s ease-in-out';
         document.body.style.visibility = 'visible';
