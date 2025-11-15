@@ -98,20 +98,17 @@
     }
   </script>
 
-  <!-- CORREÇÃO APLICADA AQUI: Adicione 'defer' para garantir a ordem de execução -->
-  <script defer src="https://cdn.jsdelivr.net/npm/sucrase@3.35.0/dist/umd/sucrase.js"></script>
-
   <!-- Import map das libs -->
   <script type="importmap">
-  {
-    "imports": {
-      "react": "https://esm.sh/react@18.2.0",
-      "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-      "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-      "@google/genai": "https://esm.sh/@google/genai@0.14.0"
-    }
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "@google/genai": "https://esm.sh/@google/genai@0.14.0"
   }
-  </script>
+}
+</script>
 
   <!-- Estilos inline para tela de loading (replicando animações do Tailwind independentemente) -->
   <style>
@@ -139,7 +136,7 @@
   <!-- Preloads e modulepreloads para aceleração (carrega recursos em paralelo cedo) -->
   <link rel="preload" href="/index.tsx" as="fetch" crossorigin="anonymous" />
   <link rel="preload" href="https://cdn.tailwindcss.com" as="script" />
-  <link rel="preload" href="https://cdn.jsdelivr.net/npm/sucrase@3.35.0/dist/umd/sucrase.js" as="script" />
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/sucrase@3.35.0/+esm" />
   <link rel="modulepreload" href="https://esm.sh/react@18.2.0" />
   <link rel="modulepreload" href="https://esm.sh/react-dom@18.2.0/client" />
   <link rel="modulepreload" href="https://esm.sh/react@18.2.0/jsx-runtime" />
@@ -171,6 +168,8 @@
   <div id="root"></div>
 
   <script type="module">
+    import { transform } from 'https://cdn.jsdelivr.net/npm/sucrase@3.35.0/+esm';
+
     const blobCache = new Map();
 
     async function loadSource(path, parentUrl) {
@@ -211,10 +210,9 @@
         transformedCode = transformedCode.replace(new RegExp(`(['"])${originalPath}\\1`, 'g'), `$1${blobUrl}$1`);
       }
       // Transpila com Sucrase (mais rápido que Babel)
-      const { code } = Sucrase.transform(transformedCode, {
+      const { code } = transform(transformedCode, {
         transforms: ['typescript', 'jsx'],
         jsxRuntime: 'automatic',
-        jsxImportSource: 'react',
         filePath: absoluteUrl
       });
       const blobUrl = URL.createObjectURL(new Blob([code], { type: 'application/javascript' }));
