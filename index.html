@@ -3,47 +3,73 @@
 <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale-1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0B071A" />
     
     <!-- SEO e Metatags -->
     <title>fillshy - Autonomous AI Content Pipeline</title>
-    <meta name="description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
     <!-- ... (outras metatags) ... -->
 
     <!-- Otimizações de rede -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://unpkg.com">
     <link rel="preconnect" href="https://esm.sh">
 
-    <!-- Carregamento de fontes não-bloqueante -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap"></noscript>
-    
-    <!-- Prevenção de FOUC -->
-    <style>body { visibility: hidden; opacity: 0; }</style>
+    <!-- Carregamento de fontes -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap">
 
-    <!--
-      ORDEM DE SCRIPTS CORRIGIDA:
-      - Tailwind pode ser 'defer' pois é independente.
-      - Babel NÃO PODE ser 'defer' pois nosso script principal depende dele.
-    -->
-    <script src="https://cdn.tailwindcss.com" defer></script>
+    <!-- ADICIONADO: Estilos para o Pre-Loader instantâneo -->
+    <style>
+      /* Esconde o scrollbar enquanto o pre-loader está ativo */
+      body {
+        overflow: hidden;
+      }
+      .preloader {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background-color: #0B071A; /* Mesmo fundo da sua app */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+      }
+      .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid rgba(224, 221, 240, 0.2); /* Cor base do spinner */
+        border-top-color: #E0DDF0; /* Cor principal */
+        border-radius: 50%;
+        animation: spin 1s ease-in-out infinite;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+
+    <!-- REMOVIDO: Script do Tailwind CDN daqui. Ele será carregado via JS. -->
+    
+    <!-- Babel (essencial, carrega antes do nosso script) -->
     <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
 
-    <!-- Config do Tailwind e Import Map -->
+    <!-- Config do Tailwind e Import Map (essenciais para o JS) -->
     <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: { sans: ['Inter','sans-serif'], heading: ['Sora','sans-serif'] },
-            keyframes: { 'reveal-word':{from:{opacity:'0',transform:'translateY(10px)'},to:{opacity:'1',transform:'translateY(0)'}}, 'letter-reveal':{'0%':{opacity:0,transform:'translateY(20px) scale(0.8)'},'100%':{opacity:1,transform:'translateY(0) scale(1)'}}, 'logo-bar-1':{'0%':{transform:'translateY(-40px)',opacity:0},'100%':{transform:'translateY(0)',opacity:1}}, 'logo-bar-2':{'0%':{transform:'translateY(40px)',opacity:0},'100%':{transform:'translateY(0)',opacity:1}}, 'blob-animation':{'0%':{transform:'translate(0px, 0px) scale(1)'},'33%':{transform:'translate(30px, -50px) scale(1.1)'},'66%':{transform:'translate(-20px, 20px) scale(0.9)'},'100%':{transform:'translate(0px, 0px) scale(1)'}}, 'fade-in':{from:{opacity:0},to:{opacity:1}} },
-            animation: { 'reveal-word':'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'letter-reveal':'letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'logo-bar-1':'logo-bar-1 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'logo-bar-2':'logo-bar-2 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'blob':'blob-animation 20s infinite ease-in-out', 'fade-in':'fade-in 0.3s ease-in-out' }
-          }
-        },
-        plugins: [ function({addUtilities}){addUtilities({'.scrollbar-hide':{'-ms-overflow-style':'none','scrollbar-width':'none','&::-webkit-scrollbar':{display:'none'}}})} ]
+      // A configuração FICA AQUI, para que o script do Tailwind a encontre quando for carregado
+      window.tailwind = {
+        config: {
+          theme: {
+            extend: {
+              fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Sora', 'sans-serif'] },
+              keyframes: { 'reveal-word':{from:{opacity:'0',transform:'translateY(10px)'},to:{opacity:'1',transform:'translateY(0)'}}, 'letter-reveal':{'0%':{opacity:0,transform:'translateY(20px) scale(0.8)'},'100%':{opacity:1,transform:'translateY(0) scale(1)'}}, 'logo-bar-1':{'0%':{transform:'translateY(-40px)',opacity:0},'100%':{transform:'translateY(0)',opacity:1}}, 'logo-bar-2':{'0%':{transform:'translateY(40px)',opacity:0},'100%':{transform:'translateY(0)',opacity:1}}, 'blob-animation':{'0%':{transform:'translate(0px, 0px) scale(1)'},'33%':{transform:'translate(30px, -50px) scale(1.1)'},'66%':{transform:'translate(-20px, 20px) scale(0.9)'},'100%':{transform:'translate(0px, 0px) scale(1)'}}, 'fade-in':{from:{opacity:0},to:{opacity:1}} },
+              animation: { 'reveal-word':'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'letter-reveal':'letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'logo-bar-1':'logo-bar-1 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'logo-bar-2':'logo-bar-2 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'blob':'blob-animation 20s infinite ease-in-out', 'fade-in':'fade-in 0.3s ease-in-out' }
+            }
+          },
+          plugins: [ function({addUtilities}){addUtilities({'.scrollbar-hide':{'-ms-overflow-style':'none','scrollbar-width':'none','&::-webkit-scrollbar':{display:'none'}}})} ]
+        }
       }
     </script>
     <script type="importmap">
@@ -59,9 +85,16 @@
 </head>
 <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
     <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
+    
+    <!-- ADICIONADO: Pre-Loader em HTML puro que aparece IMEDIATAMENTE -->
+    <div id="preloader" class="preloader">
+      <div class="spinner"></div>
+    </div>
+    
+    <!-- A aplicação React será renderizada aqui -->
     <div id="root"></div>
 
-    <!-- Script principal (a lógica interna está correta) -->
+    <!-- Script principal -->
     <script type="module">
         const blobCache = new Map();
 
@@ -84,6 +117,7 @@
         }
 
         async function resolveAndTranspile(entryPath, parentUrl = window.location.href) {
+            // ... (a lógica de compilação continua a mesma, ela está correta) ...
             const { absoluteUrl, sourceCode } = await loadSource(entryPath, parentUrl);
             if (blobCache.has(absoluteUrl)) return blobCache.get(absoluteUrl);
             const importRegex = /\bimport\s+[^'"]*['"](.*?)['"]/g;
@@ -114,17 +148,33 @@
 
         (async () => {
             const rootEl = document.getElementById('root');
+            const preloaderEl = document.getElementById('preloader');
             try {
+                // 1. Compila e renderiza a aplicação React.
+                //    O pre-loader continua visível durante este processo.
                 const entryModuleUrl = await resolveAndTranspile('/index.tsx');
                 await import(entryModuleUrl);
+
+                // 2. ADICIONADO: Injeta o script do Tailwind no final.
+                //    Ele agora vai escanear o DOM *depois* que o React renderizou.
+                const tailwindScript = document.createElement('script');
+                tailwindScript.src = 'https://cdn.tailwindcss.com';
+                document.head.appendChild(tailwindScript);
+                
             } catch (error) {
                 console.error('Falha ao inicializar a aplicação:', error);
                 rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p></div>`;
             } finally {
-                // Torna o corpo visível APENAS quando tudo estiver pronto
-                document.body.style.transition = 'opacity 0.2s ease-in-out';
-                document.body.style.visibility = 'visible';
-                document.body.style.opacity = '1';
+                // 3. Remove o pre-loader para revelar a aplicação já pronta e estilizada.
+                //    Um pequeno delay garante que o Tailwind tenha tempo de aplicar os estilos.
+                setTimeout(() => {
+                    if (preloaderEl) {
+                        preloaderEl.style.transition = 'opacity 0.3s ease';
+                        preloaderEl.style.opacity = '0';
+                        setTimeout(() => preloaderEl.remove(), 300);
+                    }
+                    document.body.style.overflow = 'auto'; // Restaura o scroll
+                }, 100); // 100ms é geralmente suficiente
             }
         })();
     </script>
