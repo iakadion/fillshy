@@ -213,6 +213,7 @@
       const { code } = transform(transformedCode, {
         transforms: ['typescript', 'jsx'],
         jsxRuntime: 'automatic',
+        production: true,
         filePath: absoluteUrl
       });
       const blobUrl = URL.createObjectURL(new Blob([code], { type: 'application/javascript' }));
