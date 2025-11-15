@@ -98,7 +98,7 @@
     }
   </script>
 
-  <!-- Import map das libs (corrigido nome do pacote Google Generative AI) -->
+  <!-- Import map das libs -->
   <script type="importmap">
 {
   "imports": {
@@ -170,50 +170,85 @@
   <div id="root"></div>
 
   <script type="module">
+    // Inline Service Worker code
+    const swCode = `
+      const CACHE_NAME = 'app-cache-v1';
+      const urlsToCache = [
+        '/',
+        '/index.tsx',
+        'https://unpkg.com/esbuild-wasm@0.23.1/esbuild.wasm',
+        'https://esm.sh/react@18.2.0',
+        'https://esm.sh/react-dom@18.2.0/client',
+        'https://esm.sh/react@18.2.0/jsx-runtime',
+        'https://esm.sh/@google/generative-ai@0.14.0',
+        'https://cdn.tailwindcss.com',
+        'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap',
+        '/favicon.svg'
+      ];
+
+      self.addEventListener('install', (event) => {
+        event.waitUntil(
+          caches.open(CACHE_NAME).then((cache) => {
+            return cache.addAll(urlsToCache);
+          })
+        );
+        self.skipWaiting();
+      });
+
+      self.addEventListener('activate', (event) => {
+        event.waitUntil(
+          caches.keys().then((cacheNames) => {
+            return Promise.all(
+              cacheNames.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name))
+            );
+          })
+        );
+        self.clients.claim();
+      });
+
+      self.addEventListener('fetch', (event) => {
+        if (event.request.method !== 'GET') return;
+        event.respondWith(
+          caches.match(event.request).then((cached) => {
+            const fetched = fetch(event.request).then((response) => {
+              if (response && response.status === 200 && response.type === 'basic') {
+                const clone = response.clone();
+                caches.open(CACHE_NAME).then((cache) => {
+                  cache.put(event.request, clone);
+                });
+              }
+              return response;
+            }).catch(() => {
+              return cached;
+            });
+            return cached || fetched;
+          })
+        );
+      });
+    `;
+
+    // Register inline Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', async () => {
+        try {
+          const swBlob = new Blob([swCode], { type: 'application/javascript' });
+          const swUrl = URL.createObjectURL(swBlob);
+          const registration = await navigator.serviceWorker.register(swUrl, { scope: '/' });
+          console.log('Service Worker registered with scope:', registration.scope);
+        } catch (error) {
+          console.error('Service Worker registration failed:', error);
+        }
+      });
+    }
+
     import * as esbuild from 'esbuild-wasm';
-
-    const DB_NAME = 'AppCache';
-    const DB_VERSION = 1;
-    const STORE_NAME = 'blobs';
-
-    async function openDB() {
-      return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onerror = reject;
-        request.onsuccess = () => resolve(request.result);
-        request.onupgradeneeded = (event) => {
-          const db = event.target.result;
-          db.createObjectStore(STORE_NAME, { keyPath: 'url' });
-        };
-      });
-    }
-
-    async function getCachedBlobUrl(db, absoluteUrl) {
-      return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readonly');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.get(absoluteUrl);
-        request.onsuccess = () => resolve(request.result ? request.result.blobUrl : null);
-        request.onerror = reject;
-      });
-    }
-
-    async function cacheBlobUrl(db, absoluteUrl, blobUrl) {
-      return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readwrite');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.put({ url: absoluteUrl, blobUrl });
-        request.onsuccess = resolve;
-        request.onerror = reject;
-      });
-    }
 
     const blobCache = new Map();
 
     async function loadSource(path, parentUrl) {
       const baseUrl = new URL(path, parentUrl).href;
       if (/\.(tsx?|jsx?)($|\?)/.test(baseUrl)) {
-        const res = await fetch(baseUrl, { cache: 'force-cache' });
+        const res = await fetch(baseUrl);
         if (!res.ok) throw new Error('Não foi possível carregar ' + baseUrl);
         return { absoluteUrl: baseUrl, sourceCode: await res.text() };
       }
@@ -221,23 +256,16 @@
       const candidates = [ base + '.tsx', base + '.ts', base + '/index.tsx', base + '/index.ts' ];
       for (const url of candidates) {
         try {
-          const res = await fetch(url, { cache: 'force-cache' });
+          const res = await fetch(url);
           if (res.ok) return { absoluteUrl: url, sourceCode: await res.text() };
         } catch (_) {}
       }
       throw new Error('Não foi possível encontrar o arquivo para ' + baseUrl);
     }
 
-    async function resolveAndTranspile(entryPath, parentUrl = window.location.href, db) {
+    async function resolveAndTranspile(entryPath, parentUrl = window.location.href) {
       const { absoluteUrl, sourceCode } = await loadSource(entryPath, parentUrl);
       if (blobCache.has(absoluteUrl)) return blobCache.get(absoluteUrl);
-
-      const cachedBlob = await getCachedBlobUrl(db, absoluteUrl);
-      if (cachedBlob) {
-        blobCache.set(absoluteUrl, cachedBlob);
-        return cachedBlob;
-      }
-
       const importRegex = /\bimport\s+[^'"]*['"](.*?)['"]/g;
       const dependencies = new Map();
       let match;
@@ -246,7 +274,7 @@
       }
       await Promise.all(
         Array.from(dependencies.keys()).map(async (depPath) => {
-          const childBlobUrl = await resolveAndTranspile(depPath, absoluteUrl, db);
+          const childBlobUrl = await resolveAndTranspile(depPath, absoluteUrl);
           dependencies.set(depPath, childBlobUrl);
         })
       );
@@ -261,36 +289,26 @@
         jsxImportSource: 'react',
         target: 'es2020',
         format: 'esm',
-        sourcemap: false,
-        minify: true,
-        treeShaking: true
+        sourcemap: false
       });
       const code = result.code;
       const blobUrl = URL.createObjectURL(new Blob([code], { type: 'application/javascript' }));
       blobCache.set(absoluteUrl, blobUrl);
-      await cacheBlobUrl(db, absoluteUrl, blobUrl);
       return blobUrl;
     }
 
     (async () => {
       const rootEl = document.getElementById('root');
-      let db;
       try {
-        db = await openDB();
-        const wasmURL = 'https://unpkg.com/esbuild-wasm@0.23.1/esbuild.wasm';
-        const response = await fetch(wasmURL, { cache: 'force-cache' });
-        const wasmModule = await WebAssembly.compileStreaming(response);
         await esbuild.initialize({
-          wasmModule,
-          worker: true
+          wasmURL: 'https://unpkg.com/esbuild-wasm@0.23.1/esbuild.wasm'
         });
-        const entryModuleUrl = await resolveAndTranspile('/index.tsx', window.location.href, db);
+        const entryModuleUrl = await resolveAndTranspile('/index.tsx');
         await import(entryModuleUrl);
       } catch (error) {
         console.error('Falha ao inicializar a aplicação:', error);
         rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p></div>`;
       } finally {
-        if (db) db.close();
         document.getElementById('loading').remove();
         document.body.style.transition = 'opacity 0.2s ease-in-out';
         document.body.style.visibility = 'visible';
