@@ -33,7 +33,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap"></noscript>
 
-  <!-- Prevenção de FOUC (Flash of Unstyled Content) -->
+  <!-- Prevenção de FOUC -->
   <style>body { visibility: hidden; opacity: 0; }</style>
 
   <!-- Tailwind CDN (síncrono para injeção precoce de CSS, evitando quebra) -->
@@ -105,8 +105,7 @@
     "react": "https://esm.sh/react@18.2.0",
     "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
     "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-    "@google/generative-ai": "https://esm.sh/@google/genai@0.14.0",
-    "esbuild-wasm": "https://esm.sh/esbuild-wasm@0.23.1"
+    "@google/generative-ai": "https://esm.sh/@google/generative-ai@0.14.0"
   }
 }
 </script>
@@ -169,11 +168,7 @@
 
   <div id="root"></div>
 
-  <!-- ======================= INÍCIO DO SCRIPT CORRIGIDO ======================= -->
   <script type="module">
-    import * as esbuild from 'esbuild-wasm';
-
-    // O plugin para resolver imports no navegador continua o mesmo
     async function browserResolver() {
       return {
         name: 'browser-resolver',
@@ -197,25 +192,27 @@
             const res = await fetch(args.path, { cache: 'force-cache' });
             if (!res.ok) throw new Error(`Falha ao carregar ${args.path}`);
             const contents = await res.text();
-            const loader = args.path.endsWith('.tsx') ? 'tsx' : args.path.endsWith('.ts') ? 'ts' : args.path.endsWith('.jsx') ? 'jsx' : 'js';
+            let loader = 'js';
+            if (args.path.endsWith('.tsx')) loader = 'tsx';
+            else if (args.path.endsWith('.ts')) loader = 'ts';
+            else if (args.path.endsWith('.jsx')) loader = 'jsx';
             return { contents, loader };
           });
         }
       };
     }
 
-    // Função auto-executável para carregar e rodar a aplicação
     (async () => {
       const rootEl = document.getElementById('root');
       try {
-        // CORREÇÃO: A linha "await esbuild.initialize(...)" foi REMOVIDA.
-        // A inicialização agora é implícita na primeira chamada da API (build/transform).
+        const esbuildModule = await import('https://esm.sh/esbuild-wasm@0.23.1');
+        const esbuild = esbuildModule.default || esbuildModule;
 
-        // CORREÇÃO: As opções de inicialização (wasmURL, worker) foram MOVIDAS
-        // para dentro do objeto de configuração de `esbuild.build()`.
+        await esbuild.initialize({
+          wasmURL: 'https://esm.sh/esbuild-wasm@0.23.1/esbuild.wasm'
+        });
+
         const result = await esbuild.build({
-          wasmURL: 'https://esm.sh/esbuild-wasm@0.23.1/esbuild.wasm',
-          worker: false,
           entryPoints: [new URL('/index.tsx', window.location.origin).toString()],
           bundle: true,
           write: false,
@@ -225,7 +222,6 @@
           target: 'es2020',
           jsx: 'automatic',
           jsxImportSource: 'react',
-          external: ['react', 'react-dom', 'react-dom/client', 'react/jsx-runtime', '@google/generative-ai'],
           plugins: [await browserResolver()],
         });
 
@@ -234,12 +230,10 @@
         const code = result.outputFiles[0].text;
         const blobUrl = URL.createObjectURL(new Blob([code], { type: 'application/javascript' }));
         await import(blobUrl);
-
       } catch (error) {
         console.error('Falha ao inicializar a aplicação:', error);
         rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p></div>`;
       } finally {
-        // Garante que a tela de loading seja sempre removida
         document.getElementById('loading').remove();
         document.body.style.transition = 'opacity 0.2s ease-in-out';
         document.body.style.visibility = 'visible';
@@ -247,6 +241,5 @@
       }
     })();
   </script>
-  <!-- ======================== FIM DO SCRIPT CORRIGIDO ========================= -->
 </body>
 </html>
