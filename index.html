@@ -36,10 +36,9 @@
   <!-- Prevenção de FOUC -->
   <style>body { visibility: hidden; opacity: 0; }</style>
 
-  <!-- Tailwind CDN (síncrono para injeção precoce de CSS, evitando quebra) -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind CDN (async para não bloquear, com config inline) -->
   <script>
-    tailwind.config = {
+    window.tailwind = { config: {
       theme: {
         extend: {
           fontFamily: {
@@ -95,8 +94,9 @@
           })
         }
       ]
-    }
+    }};
   </script>
+  <script src="https://cdn.tailwindcss.com" async onload="tailwind.config = window.tailwind.config"></script>
 
   <!-- Import map das libs -->
   <script type="importmap">
@@ -174,7 +174,7 @@
 
     const DB_NAME = 'AppCache';
     const DB_VERSION = 1;
-    const STORE_NAME = 'blobs';
+    const STORE_NAME = 'transpiledCode';
 
     async function openDB() {
       return new Promise((resolve, reject) => {
@@ -188,21 +188,21 @@
       });
     }
 
-    async function getCachedBlobUrl(db, absoluteUrl) {
+    async function getCachedCode(db, absoluteUrl) {
       return new Promise((resolve, reject) => {
         const transaction = db.transaction(STORE_NAME, 'readonly');
         const store = transaction.objectStore(STORE_NAME);
         const request = store.get(absoluteUrl);
-        request.onsuccess = () => resolve(request.result ? request.result.blobUrl : null);
+        request.onsuccess = () => resolve(request.result ? request.result.code : null);
         request.onerror = reject;
       });
     }
 
-    async function cacheBlobUrl(db, absoluteUrl, blobUrl) {
+    async function cacheCode(db, absoluteUrl, code) {
       return new Promise((resolve, reject) => {
         const transaction = db.transaction(STORE_NAME, 'readwrite');
         const store = transaction.objectStore(STORE_NAME);
-        const request = store.put({ url: absoluteUrl, blobUrl });
+        const request = store.put({ url: absoluteUrl, code });
         request.onsuccess = resolve;
         request.onerror = reject;
       });
@@ -232,10 +232,11 @@
       const { absoluteUrl, sourceCode } = await loadSource(entryPath, parentUrl);
       if (blobCache.has(absoluteUrl)) return blobCache.get(absoluteUrl);
 
-      const cachedBlob = await getCachedBlobUrl(db, absoluteUrl);
-      if (cachedBlob) {
-        blobCache.set(absoluteUrl, cachedBlob);
-        return cachedBlob;
+      const cachedCode = await getCachedCode(db, absoluteUrl);
+      if (cachedCode) {
+        const blobUrl = URL.createObjectURL(new Blob([cachedCode], { type: 'application/javascript' }));
+        blobCache.set(absoluteUrl, blobUrl);
+        return blobUrl;
       }
 
       const importRegex = /\bimport\s+[^'"]*['"](.*?)['"]/g;
@@ -266,9 +267,9 @@
         treeShaking: true
       });
       const code = result.code;
+      await cacheCode(db, absoluteUrl, code);
       const blobUrl = URL.createObjectURL(new Blob([code], { type: 'application/javascript' }));
       blobCache.set(absoluteUrl, blobUrl);
-      await cacheBlobUrl(db, absoluteUrl, blobUrl);
       return blobUrl;
     }
 
@@ -279,10 +280,12 @@
         db = await openDB();
         const wasmURL = 'https://unpkg.com/esbuild-wasm@0.23.1/esbuild.wasm';
         const response = await fetch(wasmURL, { cache: 'force-cache' });
-        const wasmModule = await WebAssembly.compileStreaming(response);
+        if (!response.ok) throw new Error('Falha ao carregar WASM');
+        const wasmBuffer = await response.arrayBuffer();
+        const wasmModule = await WebAssembly.compile(wasmBuffer);
         await esbuild.initialize({
           wasmModule,
-          worker: true
+          worker: false  // Executar no thread principal para evitar problemas
         });
         const entryModuleUrl = await resolveAndTranspile('/index.tsx', window.location.href, db);
         await import(entryModuleUrl);
