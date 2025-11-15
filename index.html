@@ -65,7 +65,7 @@
     <!-- SCRIPT CORRIGIDO E FINALMENTE RÁPIDO -->
     <script type="module">
         console.time('Tempo Total de Carregamento');
-        const fileCache = new Map(); // Cache para arquivos já processados
+        const fileCache = new Map();
         const rootElement = document.getElementById('root');
 
         const showError = (error) => {
@@ -73,21 +73,19 @@
             rootElement.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap; margin: 2rem;"><h2>Erro na Aplicação</h2><p>${error.message}</p><pre>${error.stack}</pre></div>`;
         };
 
-        // --- NOVA FUNÇÃO OTIMIZADA ---
-        // Tenta baixar o arquivo diretamente (GET), eliminando a requisição HEAD extra.
         async function findAndFetchFile(baseUrl) {
-            const potentialPaths = [ baseUrl, `${baseUrl}.tsx`, `${baseUrl}.ts`, `${baseUrl}/index.tsx`, `${baseUrl}/index.ts` ];
+            // Reordenado para priorizar extensões explícitas, mais seguro.
+            const potentialPaths = [ `${baseUrl}.tsx`, `${baseUrl}.ts`, `${baseUrl}/index.tsx`, `${baseUrl}/index.ts`, baseUrl ];
             for (const path of potentialPaths) {
                 try {
                     const response = await fetch(path);
                     if (response.ok) {
                         const sourceCode = await response.text();
-                        // Retorna o caminho real e o código-fonte de uma vez só.
                         return { path, sourceCode }; 
                     }
-                } catch (e) { /* Ignora erros de rede e tenta o próximo caminho */ }
+                } catch (e) { /* Ignora e tenta o próximo */ }
             }
-            return null; // Retorna null se nenhum caminho funcionar.
+            return null;
         }
 
         async function resolveAndTranspile(entryUrl) {
@@ -96,13 +94,12 @@
                 return fileCache.get(absoluteUrl);
             }
             
-            // A busca e o fetch acontecem aqui, em uma única chamada.
+            // Usamos a URL absoluta do recurso para a busca
             const fileData = await findAndFetchFile(absoluteUrl);
             if (!fileData) throw new Error(`Não foi possível encontrar ou baixar o arquivo: ${entryUrl}`);
 
             const { path: foundPath, sourceCode } = fileData;
 
-            // O resto da lógica é a mesma, mas agora muito mais rápida.
             const importRegex = /import\s+.*?from\s+['"](.*?)['"]/g;
             const dependencies = new Map();
             let match;
@@ -130,20 +127,22 @@
             
             const { code } = Babel.transform(transformedCode, {
                 presets: [['react', { runtime: 'automatic' }], ['typescript', { allExtensions: true, isTSX: true }]],
-                filename: foundPath, // Usa o caminho real encontrado para erros
+                filename: foundPath,
             });
 
             const blob = new Blob([code], { type: 'application/javascript' });
             const blobUrl = URL.createObjectURL(blob);
             
-            fileCache.set(absoluteUrl, blobUrl);
+            // Usamos a URL de entrada original para o cache para evitar ambiguidades
+            fileCache.set(entryUrl, blobUrl);
             return blobUrl;
         }
 
         (async () => {
             try {
-                // O ponto de entrada continua o mesmo
-                const entryModuleUrl = await resolveAndTranspile('/index');
+                // --- A CORREÇÃO ESTÁ AQUI ---
+                // Começamos a busca pelo arquivo de entrada real.
+                const entryModuleUrl = await resolveAndTranspile('/index.tsx');
                 await import(entryModuleUrl);
                 console.timeEnd('Tempo Total de Carregamento');
             } catch (error) {
