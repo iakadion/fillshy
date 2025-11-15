@@ -19,7 +19,7 @@
     <meta property="twitter:title" content="fillshy - Autonomous AI Content Pipeline" />
     <meta property="twitter:description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
 
-    <!-- OTIMIZAÇÃO: Pré-conexão com as CDNs para acelerar o download -->
+    <!-- Pré-conexão com as CDNs -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
@@ -28,7 +28,7 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS (sem mudanças aqui, já é eficiente) -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -42,8 +42,8 @@
         plugins: [ function({addUtilities}){addUtilities({'.scrollbar-hide':{'-ms-overflow-style':'none','scrollbar-width':'none','&::-webkit-scrollbar':{display:'none'}}})} ]
       }
     </script>
-
-    <!-- OTIMIZAÇÃO: Import maps mais limpos e eficientes usando esm.sh -->
+    
+    <!-- Import maps -->
     <script type="importmap">
     {
       "imports": {
@@ -55,66 +55,103 @@
     }
     </script>
     
-    <!-- OTIMIZAÇÃO: Carregamos o Babel ANTES do nosso script para garantir que ele esteja pronto -->
+    <!-- Babel -->
     <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
 </head>
 <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
     <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
-    <div id="root"></div> <!-- SEM MENSAGEM DE LOADING -->
+    <div id="root"></div>
 
-    <!-- OTIMIZAÇÃO: O NOVO CARREGADOR - SÓLIDO, RÁPIDO E SIMPLES -->
+    <!-- SCRIPT CORRIGIDO: Retornamos ao carregador inteligente para lidar com múltiplos arquivos -->
     <script type="module">
-      const rootElement = document.getElementById('root');
+        const blobCache = new Map(); // Cache para não reprocessar arquivos
+        const rootElement = document.getElementById('root');
 
-      // Função para exibir erros de forma clara
-      const showError = (error) => {
-        console.error("Falha ao carregar a aplicação:", error);
-        rootElement.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap; margin: 2rem;"><h2>Erro na Aplicação</h2><p>${error.message}</p><pre>${error.stack}</pre></div>`;
-      };
-      
-      (async () => {
-        try {
-          // 1. Busca o código TSX principal (uma única requisição)
-          const response = await fetch('/index.tsx');
-          if (!response.ok) throw new Error(`Não foi possível encontrar o arquivo principal: /index.tsx (status: ${response.status})`);
-          const tsxCode = await response.text();
+        const showError = (error) => {
+            console.error("Falha ao carregar a aplicação:", error);
+            rootElement.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap; margin: 2rem;"><h2>Erro na Aplicação</h2><p>${error.message}</p><pre>${error.stack}</pre></div>`;
+        };
 
-          // 2. Compila o código com Babel (processamento em memória, muito rápido)
-          const { code } = Babel.transform(tsxCode, {
-            presets: [
-              // 'automatic' é a configuração moderna para React, não precisa importar React em todo arquivo
-              ['react', { runtime: 'automatic' }], 
-              // Configuração simplificada para TypeScript com TSX
-              ['typescript', { allExtensions: true, isTSX: true }]
-            ],
-            filename: 'index.tsx' // Importante para mensagens de erro claras
-          });
-          
-          // 3. Cria um módulo a partir do código compilado usando Blob URL
-          const blob = new Blob([code], { type: 'application/javascript' });
-          const blobUrl = URL.createObjectURL(blob);
-
-          // 4. Importa o componente principal do módulo que acabamos de criar
-          //    Ele vai usar o "importmap" para resolver 'react', 'react-dom/client', etc.
-          const mainModule = await import(blobUrl);
-          const App = mainModule.default; // Assumindo que seu export principal é "export default"
-          
-          if (!App) {
-            throw new Error('Não foi encontrado um "export default" no arquivo /index.tsx.');
-          }
-
-          // 5. Renderiza a aplicação com React (rápido pois as libs já estão na memória)
-          const { createRoot } = await import('react-dom/client');
-          const root = createRoot(rootElement);
-          
-          // Importamos o React aqui para usar no createElement, necessário para renderizar o App
-          const React = await import('react');
-          root.render(React.createElement(App));
-
-        } catch (error) {
-          showError(error);
+        // Função que verifica se um arquivo existe, tentando extensões comuns
+        async function findFileWithExtension(baseUrl) {
+            const potentialPaths = [ baseUrl, `${baseUrl}.tsx`, `${baseUrl}.ts`, `${baseUrl}/index.tsx`, `${baseUrl}/index.ts` ];
+            for (const path of potentialPaths) {
+                try {
+                    const response = await fetch(path, { method: 'HEAD' });
+                    if (response.ok) return path;
+                } catch (e) { /* Ignora falhas de rede e continua */ }
+            }
+            return null;
         }
-      })();
+
+        // Função principal que resolve, compila e cacheia módulos
+        async function resolveAndTranspile(entryPath) {
+            const absoluteUrl = new URL(entryPath, window.location.href).href;
+
+            if (blobCache.has(absoluteUrl)) {
+                return blobCache.get(absoluteUrl);
+            }
+
+            const response = await fetch(absoluteUrl);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status} for ${absoluteUrl}`);
+            
+            const sourceCode = await response.text();
+            
+            // Regex para encontrar todos os `import`s
+            const importRegex = /import\s+.*?from\s+['"](.*?)['"]/g;
+            const dependencies = new Map();
+            let match;
+            
+            while ((match = importRegex.exec(sourceCode)) !== null) {
+                const depPath = match[1];
+                // Processamos apenas os imports relativos (que começam com '.')
+                if (depPath.startsWith('.')) { 
+                    dependencies.set(depPath, null);
+                }
+            }
+            
+            // Resolve todas as dependências em paralelo, de forma recursiva
+            const promises = Array.from(dependencies.keys()).map(async (depPath) => {
+                const relativeUrl = new URL(depPath, absoluteUrl).href;
+                const finalPath = await findFileWithExtension(relativeUrl);
+                if (!finalPath) throw new Error(`Dependência não encontrada: "${depPath}" em ${absoluteUrl}`);
+                
+                const resolvedBlobUrl = await resolveAndTranspile(finalPath);
+                dependencies.set(depPath, resolvedBlobUrl);
+            });
+
+            await Promise.all(promises);
+
+            // Substitui os caminhos relativos pelos URLs dos Blobs compilados
+            let transformedCode = sourceCode;
+            for (const [path, blobUrl] of dependencies.entries()) {
+                if(blobUrl) {
+                    transformedCode = transformedCode.replace(new RegExp(`['"]${path}['"]`, 'g'), `'${blobUrl}'`);
+                }
+            }
+            
+            // Compila o código final com os caminhos já resolvidos
+            const { code } = Babel.transform(transformedCode, {
+                presets: [['react', { runtime: 'automatic' }], ['typescript', { allExtensions: true, isTSX: true }]],
+                filename: absoluteUrl,
+            });
+
+            const blob = new Blob([code], { type: 'application/javascript' });
+            const blobUrl = URL.createObjectURL(blob);
+            
+            blobCache.set(absoluteUrl, blobUrl); // Guarda no cache
+            return blobUrl;
+        }
+
+        (async () => {
+            try {
+                // Ponto de entrada da sua aplicação
+                const entryModuleUrl = await resolveAndTranspile('/index.tsx');
+                await import(entryModuleUrl);
+            } catch (error) {
+                showError(error);
+            }
+        })();
     </script>
 </body>
 </html>
