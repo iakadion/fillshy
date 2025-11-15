@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0B071A" />
     
-    <!-- SEO e Metatags (Mantidos) -->
+    <!-- SEO e Social Sharing -->
     <title>fillshy - Autonomous AI Content Pipeline</title>
     <meta name="description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
     <link rel="canonical" href="./" />
@@ -19,133 +19,102 @@
     <meta property="twitter:title" content="fillshy - Autonomous AI Content Pipeline" />
     <meta property="twitter:description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
 
-    <!-- Fonts -->
+    <!-- OTIMIZAÇÃO: Pré-conexão com as CDNs para acelerar o download -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://esm.sh">
+
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" rel="stylesheet">
     
-    <!-- Configuração completa do Tailwind (essencial para as animações) -->
+    <!-- Tailwind CSS (sem mudanças aqui, já é eficiente) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = { /* ...Sua configuração completa do Tailwind vai aqui como antes... */
+      tailwind.config = {
         theme: {
           extend: {
-            fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Sora', 'sans-serif'] },
-            keyframes: {
-              'reveal-word': { 'from': { opacity: '0', transform: 'translateY(10px)' }, 'to': { opacity: '1', transform: 'translateY(0)' } },
-              'letter-reveal': { '0%': { opacity: 0, transform: 'translateY(20px) scale(0.8)' }, '100%': { opacity: 1, transform: 'translateY(0) scale(1)' } },
-              'logo-bar-1': { '0%': { transform: 'translateY(-40px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } },
-              'logo-bar-2': { '0%': { transform: 'translateY(40px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } },
-              'blob-animation': { '0%': { transform: 'translate(0px, 0px) scale(1)' }, '33%': { transform: 'translate(30px, -50px) scale(1.1)' }, '66%': { transform: 'translate(-20px, 20px) scale(0.9)' }, '100%': { transform: 'translate(0px, 0px) scale(1)' } },
-              'fade-in': { 'from': { opacity: 0 }, 'to': { opacity: 1 } },
-            },
-            animation: {
-              'reveal-word': 'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-              'letter-reveal': 'letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-              'logo-bar-1': 'logo-bar-1 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-              'logo-bar-2': 'logo-bar-2 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-              'blob': 'blob-animation 20s infinite ease-in-out',
-              'fade-in': 'fade-in 0.3s ease-in-out',
-            }
+            fontFamily: { sans: ['Inter','sans-serif'], heading: ['Sora','sans-serif'] },
+            keyframes: { 'reveal-word':{from:{opacity:'0',transform:'translateY(10px)'},to:{opacity:'1',transform:'translateY(0)'}}, 'letter-reveal':{'0%':{opacity:0,transform:'translateY(20px) scale(0.8)'},'100%':{opacity:1,transform:'translateY(0) scale(1)'}}, 'logo-bar-1':{'0%':{transform:'translateY(-40px)',opacity:0},'100%':{transform:'translateY(0)',opacity:1}}, 'logo-bar-2':{'0%':{transform:'translateY(40px)',opacity:0},'100%':{transform:'translateY(0)',opacity:1}}, 'blob-animation':{'0%':{transform:'translate(0px, 0px) scale(1)'},'33%':{transform:'translate(30px, -50px) scale(1.1)'},'66%':{transform:'translate(-20px, 20px) scale(0.9)'},'100%':{transform:'translate(0px, 0px) scale(1)'}}, 'fade-in':{from:{opacity:0},to:{opacity:1}} },
+            animation: { 'reveal-word':'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'letter-reveal':'letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'logo-bar-1':'logo-bar-1 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'logo-bar-2':'logo-bar-2 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'blob':'blob-animation 20s infinite ease-in-out', 'fade-in':'fade-in 0.3s ease-in-out' }
           }
         },
-        plugins: [ function({ addUtilities }) { addUtilities({ '.scrollbar-hide': { '-ms-overflow-style': 'none', 'scrollbar-width': 'none', '&::-webkit-scrollbar': { display: 'none' } } }) } ]
+        plugins: [ function({addUtilities}){addUtilities({'.scrollbar-hide':{'-ms-overflow-style':'none','scrollbar-width':'none','&::-webkit-scrollbar':{display:'none'}}})} ]
       }
     </script>
 
-    <!-- O Import Map para dependências externas -->
+    <!-- OTIMIZAÇÃO: Import maps mais limpos e eficientes usando esm.sh -->
     <script type="importmap">
     {
       "imports": {
-        "react": "https://aistudiocdn.com/react@^19.2.0",
-        "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.0/client",
-        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1"
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+        "@google/genai": "https://esm.sh/@google/genai@0.14.0"
       }
     }
     </script>
     
-    <style>
-      /* Estilos para o Loading State Imediato */
-      #app-loader {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-      }
-      .spinner {
-        border: 4px solid rgba(255, 255, 255, 0.2);
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        border-left-color: #E0DDF0;
-        animation: spin 1s ease infinite;
-      }
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-    </style>
+    <!-- OTIMIZAÇÃO: Carregamos o Babel ANTES do nosso script para garantir que ele esteja pronto -->
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
 </head>
 <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
     <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
-    
-    <!-- O contêiner root agora começa com o loader dentro dele -->
-    <div id="root">
-        <div id="app-loader">
-            <div class="spinner"></div>
-        </div>
-    </div>
+    <div id="root"></div> <!-- SEM MENSAGEM DE LOADING -->
 
-    <!-- Ferramentas de transpilação: SystemJS + Babel -->
-    <script src="https://unpkg.com/systemjs@6.14.3/dist/s.min.js"></script>
-    <script src="https://unpkg.com/systemjs-plugin-babel@0.0.25/plugin-babel.js"></script>
-    <!-- O Babel Standalone ainda é necessário para o plugin funcionar -->
-    <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+    <!-- OTIMIZAÇÃO: O NOVO CARREGADOR - SÓLIDO, RÁPIDO E SIMPLES -->
+    <script type="module">
+      const rootElement = document.getElementById('root');
 
-    <!-- Configuração do SystemJS: A forma mais rápida e robusta -->
-    <script>
-        // SystemJS precisa saber qual instância do Babel usar
-        System.set('plugin-babel', System.newModule({ 'default': window.Babel, __useDefault: true }));
+      // Função para exibir erros de forma clara
+      const showError = (error) => {
+        console.error("Falha ao carregar a aplicação:", error);
+        rootElement.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap; margin: 2rem;"><h2>Erro na Aplicação</h2><p>${error.message}</p><pre>${error.stack}</pre></div>`;
+      };
+      
+      (async () => {
+        try {
+          // 1. Busca o código TSX principal (uma única requisição)
+          const response = await fetch('/index.tsx');
+          if (!response.ok) throw new Error(`Não foi possível encontrar o arquivo principal: /index.tsx (status: ${response.status})`);
+          const tsxCode = await response.text();
 
-        System.config({
-            // Diz ao SystemJS para usar o Babel como seu transpilador
-            transpiler: 'plugin-babel',
-            // Mapeia o plugin para que o SystemJS possa encontrá-lo
-            map: {
-                'plugin-babel': 'https://unpkg.com/systemjs-plugin-babel@0.0.25/plugin-babel.js'
-            },
-            // Configuração para resolver imports sem extensão (ex: './App')
-            packages: {
-                './': {
-                    defaultExtension: 'tsx'
-                }
-            },
-            // Regras para o Babel: quais arquivos transpilar e como
-            meta: {
-                // Para arquivos TSX, use os presets de React e TypeScript
-                '*.tsx': {
-                    babelOptions: {
-                        react: true,
-                        typescript: true
-                    }
-                },
-                // Para arquivos TS, apenas o preset de TypeScript
-                '*.ts': {
-                    babelOptions: {
-                        typescript: true
-                    }
-                }
-            }
-        });
+          // 2. Compila o código com Babel (processamento em memória, muito rápido)
+          const { code } = Babel.transform(tsxCode, {
+            presets: [
+              // 'automatic' é a configuração moderna para React, não precisa importar React em todo arquivo
+              ['react', { runtime: 'automatic' }], 
+              // Configuração simplificada para TypeScript com TSX
+              ['typescript', { allExtensions: true, isTSX: true }]
+            ],
+            filename: 'index.tsx' // Importante para mensagens de erro claras
+          });
+          
+          // 3. Cria um módulo a partir do código compilado usando Blob URL
+          const blob = new Blob([code], { type: 'application/javascript' });
+          const blobUrl = URL.createObjectURL(blob);
 
-        // Ponto de entrada: manda o SystemJS importar o arquivo principal.
-        // Ele vai gerenciar todo o processo de forma otimizada.
-        System.import('./index.tsx').catch(function(err) {
-            console.error('Erro ao inicializar a aplicação com SystemJS:', err);
-            // Remove o loader e mostra o erro
-            var rootEl = document.getElementById('root');
-            rootEl.innerHTML = '<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>' + err.message + '</p><pre>' + err.stack + '</pre></div>';
-        });
+          // 4. Importa o componente principal do módulo que acabamos de criar
+          //    Ele vai usar o "importmap" para resolver 'react', 'react-dom/client', etc.
+          const mainModule = await import(blobUrl);
+          const App = mainModule.default; // Assumindo que seu export principal é "export default"
+          
+          if (!App) {
+            throw new Error('Não foi encontrado um "export default" no arquivo /index.tsx.');
+          }
+
+          // 5. Renderiza a aplicação com React (rápido pois as libs já estão na memória)
+          const { createRoot } = await import('react-dom/client');
+          const root = createRoot(rootElement);
+          
+          // Importamos o React aqui para usar no createElement, necessário para renderizar o App
+          const React = await import('react');
+          root.render(React.createElement(App));
+
+        } catch (error) {
+          showError(error);
+        }
+      })();
     </script>
 </body>
 </html>
