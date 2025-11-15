@@ -22,9 +22,10 @@
   <meta property="twitter:description"
         content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
 
-  <!-- Otimizações de rede: Preconnects -->
+  <!-- Otimizações de rede: Preconnects para todos os CDNs usados -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="preconnect" href="https://esm.sh">
 
@@ -32,204 +33,210 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap"></noscript>
 
-  <!-- Prevenção de FOUC (Flash of Unstyled Content) -->
+  <!-- Prevenção de FOUC -->
   <style>body { visibility: hidden; opacity: 0; }</style>
 
-  <!-- Import map das libs (esbuild saberá que são externas) -->
-  <script type="importmap">
-  {
-    "imports": {
-      "react": "https://esm.sh/react@18.2.0",
-      "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-      "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-      "@google/generative-ai": "https://esm.sh/@google/genai@0.14.0"
+  <!-- Tailwind CDN (síncrono para injeção precoce de CSS, evitando quebra) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Sora', 'sans-serif'],
+          },
+          keyframes: {
+            'reveal-word': {
+              from: { opacity: '0', transform: 'translateY(10px)' },
+              to:   { opacity: '1', transform: 'translateY(0)' },
+            },
+            'letter-reveal': {
+              '0%':   { opacity: 0, transform: 'translateY(20px) scale(0.8)' },
+              '100%': { opacity: 1, transform: 'translateY(0) scale(1)' },
+            },
+            'logo-bar-1': {
+              '0%':   { transform: 'translateY(-40px)', opacity: 0 },
+              '100%': { transform: 'translateY(0)', opacity: 1 },
+            },
+            'logo-bar-2': {
+              '0%':   { transform: 'translateY(40px)', opacity: 0 },
+              '100%': { transform: 'translateY(0)', opacity: 1 },
+            },
+            'blob-animation': {
+              '0%':   { transform: 'translate(0px, 0px) scale(1)' },
+              '33%':  { transform: 'translate(30px, -50px) scale(1.1)' },
+              '66%':  { transform: 'translate(-20px, 20px) scale(0.9)' },
+              '100%': { transform: 'translate(0px, 0px) scale(1)' },
+            },
+            'fade-in': {
+              from: { opacity: 0 },
+              to:   { opacity: 1 },
+            },
+          },
+          animation: {
+            'reveal-word': 'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+            'letter-reveal': 'letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+            'logo-bar-1': 'logo-bar-1 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+            'logo-bar-2': 'logo-bar-2 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+            'blob': 'blob-animation 20s infinite ease-in-out',
+            'fade-in': 'fade-in 0.3s ease-in-out',
+          }
+        }
+      },
+      plugins: [
+        function ({ addUtilities }) {
+          addUtilities({
+            '.scrollbar-hide': {
+              '-ms-overflow-style': 'none',
+              'scrollbar-width': 'none',
+              '&::-webkit-scrollbar': { display: 'none' }
+            }
+          })
+        }
+      ]
     }
-  }
   </script>
 
-  <!-- Estilos inline para tela de loading (para aparecer imediatamente) -->
+  <!-- Import map das libs -->
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "@google/generative-ai": "https://esm.sh/@google/generative-ai@0.14.0",
+    "esbuild-wasm": "https://esm.sh/esbuild-wasm@0.23.1"
+  }
+}
+</script>
+
+  <!-- Estilos inline para tela de loading (replicando animações do Tailwind independentemente) -->
   <style>
-    @keyframes blob-animation { 0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.9); } 100% { transform: translate(0px, 0px) scale(1); } }
-    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes letter-reveal { 0% { opacity: 0; transform: translateY(20px) scale(0.8); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
-    #loading .animate-blob { animation: blob-animation 20s infinite ease-in-out; }
-    #loading .animate-fade-in { animation: fade-in 0.3s ease-in-out; }
-    #loading .animate-letter-reveal { animation: letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards; }
-    #loading .letter { display: inline-block; }
+    html { overflow-y: auto; }
+    @keyframes blob-animation {
+      0% { transform: translate(0px, 0px) scale(1); }
+      33% { transform: translate(30px, -50px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+      100% { transform: translate(0px, 0px) scale(1); }
+    }
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes letter-reveal {
+      0% { opacity: 0; transform: translateY(20px) scale(0.8); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .animate-blob { animation: blob-animation 20s infinite ease-in-out; }
+    .animate-fade-in { animation: fade-in 0.3s ease-in-out; }
+    .animate-letter-reveal { animation: letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards; }
+    .letter { display: inline-block; }
   </style>
 
-  <!-- Preloads para os recursos mais críticos -->
-  <link rel="modulepreload" href="https://unpkg.com/esbuild-wasm@0.23.1/esbuild.wasm" />
-  <link rel="modulepreload" href="https://unpkg.com/esbuild-wasm@0.23.1" />
+  <!-- Preloads e modulepreloads para aceleração (carrega recursos em paralelo cedo) -->
+  <link rel="preload" href="/index.tsx" as="fetch" crossorigin="anonymous" />
+  <link rel="preload" href="https://cdn.tailwindcss.com" as="script" />
+  <link rel="modulepreload" href="https://esm.sh/esbuild-wasm@0.23.1" />
+  <link rel="preload" href="https://esm.sh/esbuild-wasm@0.23.1/esbuild.wasm" as="fetch" crossorigin="anonymous" />
   <link rel="modulepreload" href="https://esm.sh/react@18.2.0" />
   <link rel="modulepreload" href="https://esm.sh/react-dom@18.2.0/client" />
+  <link rel="modulepreload" href="https://esm.sh/react@18.2.0/jsx-runtime" />
+  <link rel="modulepreload" href="https://esm.sh/@google/generative-ai@0.14.0" />
+  <link rel="prefetch" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" as="style" />
 </head>
 <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
   <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
 
-  <!-- O loading é HTML/CSS puro, sem dependências de JS -->
+  <!-- Tela de loading com animações replicadas (aparece imediatamente) -->
   <div id="loading" class="fixed inset-0 bg-[#0B071A] flex flex-col items-center justify-center z-50 animate-fade-in">
     <div class="relative w-32 h-32 mb-4">
       <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full filter blur-xl opacity-70 animate-blob"></div>
     </div>
     <div class="text-3xl font-heading text-[#E0DDF0]">
-      <span class="letter animate-letter-reveal" style="animation-delay: 0s;">L</span><span class="letter animate-letter-reveal" style="animation-delay: 0.1s;">o</span><span class="letter animate-letter-reveal" style="animation-delay: 0.2s;">a</span><span class="letter animate-letter-reveal" style="animation-delay: 0.3s;">d</span><span class="letter animate-letter-reveal" style="animation-delay: 0.4s;">i</span><span class="letter animate-letter-reveal" style="animation-delay: 0.5s;">n</span><span class="letter animate-letter-reveal" style="animation-delay: 0.6s;">g</span><span class="letter animate-letter-reveal" style="animation-delay: 0.7s;">.</span><span class="letter animate-letter-reveal" style="animation-delay: 0.8s;">.</span><span class="letter animate-letter-reveal" style="animation-delay: 0.9s;">.</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0s;">L</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0.1s;">o</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0.2s;">a</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0.3s;">d</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0.4s;">i</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0.5s;">n</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0.6s;">g</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0.7s;">.</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0.8s;">.</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0.9s;">.</span>
     </div>
   </div>
 
   <div id="root"></div>
 
-  <!-- A MÁGICA ACONTECE AQUI -->
   <script type="module">
-    import * as esbuild from 'https://unpkg.com/esbuild-wasm@0.23.1';
+    import * as esbuild from 'esbuild-wasm';
 
-    // --- Funções de Cache com IndexedDB (MANTIDAS) ---
-    const DB_NAME = 'AppCache';
-    const DB_VERSION = 1;
-    const STORE_NAME = 'sourceCode';
-    let db;
+    async function browserResolver() {
+      return {
+        name: 'browser-resolver',
+        setup(build) {
+          build.onResolve({ filter: /^https?:\/\// }, args => ({
+            path: args.path,
+            namespace: 'http-url',
+          }));
 
-    async function openDB() {
-      if (db) return db;
-      return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => {
-          db = request.result;
-          resolve(db);
-        };
-        request.onupgradeneeded = (event) => {
-          const dbInstance = event.target.result;
-          if (!dbInstance.objectStoreNames.contains(STORE_NAME)) {
-            dbInstance.createObjectStore(STORE_NAME, { keyPath: 'url' });
-          }
-        };
-      });
+          build.onResolve({ filter: /.*/, namespace: 'http-url' }, args => ({
+            path: new URL(args.path, args.importer).toString(),
+            namespace: 'http-url',
+          }));
+
+          build.onResolve({ filter: /^\/.*/ }, args => ({
+            path: new URL(args.path, window.location.origin).toString(),
+            namespace: 'http-url',
+          }));
+
+          build.onLoad({ filter: /.*/, namespace: 'http-url' }, async (args) => {
+            const res = await fetch(args.path, { cache: 'force-cache' });
+            if (!res.ok) throw new Error(`Falha ao carregar ${args.path}`);
+            const contents = await res.text();
+            const loader = args.path.endsWith('.tsx') ? 'tsx' : args.path.endsWith('.ts') ? 'ts' : args.path.endsWith('.jsx') ? 'jsx' : 'js';
+            return { contents, loader };
+          });
+        }
+      };
     }
 
-    async function getCachedCode(url) {
-      const db = await openDB();
-      return new Promise((resolve) => {
-        const tx = db.transaction(STORE_NAME, 'readonly');
-        const store = tx.objectStore(STORE_NAME);
-        const req = store.get(url);
-        req.onsuccess = () => resolve(req.result ? req.result.code : null);
-        req.onerror = () => resolve(null); // Em caso de erro, apenas retorne null
-      });
-    }
-
-    async function cacheCode(url, code) {
-      const db = await openDB();
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      const store = tx.objectStore(STORE_NAME);
-      await store.put({ url, code });
-    }
-
-    // --- Plugin do ESBuild para carregar arquivos da Web ---
-    const webModulePlugin = {
-      name: 'web-module-plugin',
-      setup(build) {
-        // Intercepta imports de bibliotecas (ex: 'react') e marca como "externos".
-        // Isso diz ao esbuild para não tentar empacotá-los, deixando o importmap cuidar disso.
-        build.onResolve({ filter: /^[^./]/ }, args => ({
-          path: args.path,
-          external: true,
-        }));
-
-        // Intercepta imports relativos (ex: './componente')
-        build.onResolve({ filter: /^\.\// }, args => ({
-            // resolvePath é o diretório do arquivo que está importando
-            // args.path é o caminho relativo (ex: './outro-arquivo')
-            // O resultado é a URL completa do arquivo a ser importado.
-            path: new URL(args.path, args.importer).href,
-            namespace: 'web-module',
-        }));
-
-        // Intercepta o carregamento de qualquer arquivo no nosso namespace 'web-module'
-        build.onLoad({ filter: /.*/, namespace: 'web-module' }, async args => {
-          let url = new URL(args.path);
-          let source = await getCachedCode(url.href);
-          
-          if (!source) {
-            // Tenta adivinhar a extensão do arquivo, como um bundler de verdade faria.
-            const candidates = [
-                url.href,
-                `${url.href}.tsx`,
-                `${url.href}.ts`,
-                `${url.href}/index.tsx`,
-                `${url.href}/index.ts`
-            ];
-
-            let response;
-            for(const candidateUrl of candidates) {
-                try {
-                    response = await fetch(candidateUrl);
-                    if(response.ok) {
-                        url = new URL(candidateUrl); // Atualiza a URL para a que funcionou
-                        break;
-                    }
-                } catch(e){}
-            }
-            
-            if (!response || !response.ok) {
-              return { errors: [{ text: `Não foi possível encontrar o módulo em ${url.href}` }] };
-            }
-
-            source = await response.text();
-            await cacheCode(url.href, source);
-          }
-
-          // Determina o "loader" correto (tsx ou ts) baseado na extensão do arquivo.
-          const loader = url.pathname.endsWith('.tsx') ? 'tsx' : 'ts';
-          
-          return {
-            contents: source,
-            loader: loader,
-            // Informa ao próximo passo qual era a URL completa deste arquivo.
-            resolveDir: new URL('.', url).href,
-          };
-        });
-      },
-    };
-
-    // --- Lógica Principal de Inicialização ---
     (async () => {
       const rootEl = document.getElementById('root');
       try {
-        const wasmURL = 'https://unpkg.com/esbuild-wasm@0.23.1/esbuild.wasm';
-        await esbuild.initialize({ wasmURL, worker: false });
-
-        const result = await esbuild.build({
-          entryPoints: ['./index.tsx'], // O ponto de entrada da sua aplicação
-          bundle: true,               // ESSENCIAL: diz para ele seguir os imports
-          write: false,               // Não escreve em disco, retorna o resultado na memória
-          format: 'esm',              // Formato de módulo padrão para navegadores
-          jsx: 'automatic',           // Configura o JSX para React 17+
-          jsxImportSource: 'react',
-          loader: { '.tsx': 'tsx' },  // Define o loader para o entrypoint
-          plugins: [webModulePlugin], // USA O PLUGIN!
-          minify: true,               // Minifica o código para produção
-          treeShaking: true,          // Remove código não utilizado
+        await esbuild.initialize({
+          wasmURL: 'https://esm.sh/esbuild-wasm@0.23.1/esbuild.wasm',
+          worker: false
         });
 
-        // O resultado é um arquivo JS completo e empacotado
-        const bundledCode = result.outputFiles[0].text;
-        
-        // Cria uma URL temporária para o nosso código e o importa como um módulo
-        const blob = new Blob([bundledCode], { type: 'application/javascript' });
-        const objectURL = URL.createObjectURL(blob);
-        await import(objectURL);
-        URL.revokeObjectURL(objectURL); // Libera a memória após o uso
+        const result = await esbuild.build({
+          entryPoints: [new URL('/index.tsx', window.location.origin).toString()],
+          bundle: true,
+          write: false,
+          format: 'esm',
+          minify: true,
+          sourcemap: false,
+          target: 'es2020',
+          jsx: 'automatic',
+          jsxImportSource: 'react',
+          external: ['react', 'react-dom', 'react-dom/client', 'react/jsx-runtime', '@google/generative-ai'],
+          plugins: [await browserResolver()],
+        });
 
+        if (result.outputFiles.length === 0) throw new Error('Nenhum arquivo de saída gerado');
+
+        const code = result.outputFiles[0].text;
+        const blobUrl = URL.createObjectURL(new Blob([code], { type: 'application/javascript' }));
+        await import(blobUrl);
       } catch (error) {
         console.error('Falha ao inicializar a aplicação:', error);
-        rootEl.innerHTML = `<div style="background:#2b0f0f;color:#ff8b8b;padding:20px;border-radius:8px;font-family:monospace;white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.stack || error.message}</p></div>`;
+        rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p></div>`;
       } finally {
         document.getElementById('loading').remove();
         document.body.style.transition = 'opacity 0.2s ease-in-out';
         document.body.style.visibility = 'visible';
         document.body.style.opacity = '1';
-        if(db) db.close(); // Fecha a conexão com o banco de dados
       }
     })();
   </script>
