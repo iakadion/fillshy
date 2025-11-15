@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0B071A" />
     
-    <!-- SEO and Social Sharing Meta Tags -->
+    <!-- SEO e Metatags (Mantidos) -->
     <title>fillshy - Autonomous AI Content Pipeline</title>
     <meta name="description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
     <link rel="canonical" href="./" />
@@ -24,43 +24,20 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS com a CONFIGURAÇÃO COMPLETA RESTAURADA -->
+    <!-- Configuração completa do Tailwind (essencial para as animações) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = {
+      tailwind.config = { /* ...Sua configuração completa do Tailwind vai aqui como antes... */
         theme: {
           extend: {
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              heading: ['Sora', 'sans-serif'],
-            },
+            fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Sora', 'sans-serif'] },
             keyframes: {
-              'reveal-word': {
-                'from': { opacity: '0', transform: 'translateY(10px)' },
-                'to': { opacity: '1', transform: 'translateY(0)' },
-              },
-              'letter-reveal': {
-                '0%': { opacity: 0, transform: 'translateY(20px) scale(0.8)' },
-                '100%': { opacity: 1, transform: 'translateY(0) scale(1)' },
-              },
-              'logo-bar-1': {
-                '0%': { transform: 'translateY(-40px)', opacity: 0 },
-                '100%': { transform: 'translateY(0)', opacity: 1 },
-              },
-              'logo-bar-2': {
-                '0%': { transform: 'translateY(40px)', opacity: 0 },
-                '100%': { transform: 'translateY(0)', opacity: 1 },
-              },
-              'blob-animation': {
-                '0%': { transform: 'translate(0px, 0px) scale(1)' },
-                '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
-                '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-                '100%': { transform: 'translate(0px, 0px) scale(1)' },
-              },
-              'fade-in': {
-                'from': { opacity: 0 },
-                'to': { opacity: 1 },
-              },
+              'reveal-word': { 'from': { opacity: '0', transform: 'translateY(10px)' }, 'to': { opacity: '1', transform: 'translateY(0)' } },
+              'letter-reveal': { '0%': { opacity: 0, transform: 'translateY(20px) scale(0.8)' }, '100%': { opacity: 1, transform: 'translateY(0) scale(1)' } },
+              'logo-bar-1': { '0%': { transform: 'translateY(-40px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } },
+              'logo-bar-2': { '0%': { transform: 'translateY(40px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } },
+              'blob-animation': { '0%': { transform: 'translate(0px, 0px) scale(1)' }, '33%': { transform: 'translate(30px, -50px) scale(1.1)' }, '66%': { transform: 'translate(-20px, 20px) scale(0.9)' }, '100%': { transform: 'translate(0px, 0px) scale(1)' } },
+              'fade-in': { 'from': { opacity: 0 }, 'to': { opacity: 1 } },
             },
             animation: {
               'reveal-word': 'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
@@ -72,35 +49,11 @@
             }
           }
         },
-        plugins: [ // O PLUGIN SCROLLBAR-HIDE TAMBÉM FOI RESTAURADO
-            function({ addUtilities }) {
-                addUtilities({
-                    '.scrollbar-hide': {
-                        /* IE and Edge */
-                        '-ms-overflow-style': 'none',
-                        /* Firefox */
-                        'scrollbar-width': 'none',
-                        /* Safari and Chrome */
-                        '&::-webkit-scrollbar': {
-                            display: 'none'
-                        }
-                    }
-                })
-            }
-        ]
+        plugins: [ function({ addUtilities }) { addUtilities({ '.scrollbar-hide': { '-ms-overflow-style': 'none', 'scrollbar-width': 'none', '&::-webkit-scrollbar': { display: 'none' } } }) } ]
       }
     </script>
 
-    <!-- Custom Styles -->
-    <style>
-      html { overflow-y: auto; }
-      /* A classe .scrollbar-hide agora virá do plugin do Tailwind, então a definição manual não é mais necessária. */
-    </style>
-
-    <!-- Babel Standalone é a única ferramenta que precisamos -->
-    <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
-
-    <!-- Seu importmap com as CDNs corretas -->
+    <!-- O Import Map para dependências externas -->
     <script type="importmap">
     {
       "imports": {
@@ -110,86 +63,89 @@
       }
     }
     </script>
+    
+    <style>
+      /* Estilos para o Loading State Imediato */
+      #app-loader {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+      .spinner {
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border-left-color: #E0DDF0;
+        animation: spin 1s ease infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
 </head>
 <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
     <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
-    <div id="root"></div>
+    
+    <!-- O contêiner root agora começa com o loader dentro dele -->
+    <div id="root">
+        <div id="app-loader">
+            <div class="spinner"></div>
+        </div>
+    </div>
 
-    <!-- O SCRIPT DE CARREGAMENTO que já provamos que funciona -->
-    <script type="module">
-        const blobCache = new Map();
+    <!-- Ferramentas de transpilação: SystemJS + Babel -->
+    <script src="https://unpkg.com/systemjs@6.14.3/dist/s.min.js"></script>
+    <script src="https://unpkg.com/systemjs-plugin-babel@0.0.25/plugin-babel.js"></script>
+    <!-- O Babel Standalone ainda é necessário para o plugin funcionar -->
+    <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
 
-        async function resolveAndTranspile(entryPath) {
-            const absoluteUrl = new URL(entryPath, window.location.href).href;
-            if (blobCache.has(absoluteUrl)) {
-                return blobCache.get(absoluteUrl);
-            }
+    <!-- Configuração do SystemJS: A forma mais rápida e robusta -->
+    <script>
+        // SystemJS precisa saber qual instância do Babel usar
+        System.set('plugin-babel', System.newModule({ 'default': window.Babel, __useDefault: true }));
 
-            const response = await fetch(absoluteUrl);
-            if (!response.ok) throw new Error(`Não foi possível encontrar o arquivo: ${absoluteUrl}`);
-            const sourceCode = await response.text();
-            
-            const importRegex = /import\s+.*?from\s+['"](.*?)['"]/g;
-            const dependencies = new Map();
-            let match;
-            
-            while ((match = importRegex.exec(sourceCode)) !== null) {
-                const depPath = match[1];
-                if (depPath.startsWith('.')) { 
-                    dependencies.set(depPath, null);
+        System.config({
+            // Diz ao SystemJS para usar o Babel como seu transpilador
+            transpiler: 'plugin-babel',
+            // Mapeia o plugin para que o SystemJS possa encontrá-lo
+            map: {
+                'plugin-babel': 'https://unpkg.com/systemjs-plugin-babel@0.0.25/plugin-babel.js'
+            },
+            // Configuração para resolver imports sem extensão (ex: './App')
+            packages: {
+                './': {
+                    defaultExtension: 'tsx'
+                }
+            },
+            // Regras para o Babel: quais arquivos transpilar e como
+            meta: {
+                // Para arquivos TSX, use os presets de React e TypeScript
+                '*.tsx': {
+                    babelOptions: {
+                        react: true,
+                        typescript: true
+                    }
+                },
+                // Para arquivos TS, apenas o preset de TypeScript
+                '*.ts': {
+                    babelOptions: {
+                        typescript: true
+                    }
                 }
             }
+        });
 
-            const promises = Array.from(dependencies.keys()).map(async (depPath) => {
-                const newPath = new URL(depPath, absoluteUrl).href;
-                const finalPath = await findFileWithExtension(newPath);
-                if (!finalPath) throw new Error(`Dependência não encontrada: ${depPath} em ${absoluteUrl}`);
-                const resolvedUrl = await resolveAndTranspile(finalPath);
-                dependencies.set(depPath, resolvedUrl);
-            });
-
-            await Promise.all(promises);
-
-            let transformedCode = sourceCode;
-            for (const [path, blobUrl] of dependencies.entries()) {
-                if(blobUrl) {
-                    transformedCode = transformedCode.replace(new RegExp(`['"]${path}['"]`, 'g'), `'${blobUrl}'`);
-                }
-            }
-
-            const { code } = Babel.transform(transformedCode, {
-                presets: ['react', 'typescript'],
-                filename: absoluteUrl,
-            });
-
-            const blob = new Blob([code], { type: 'application/javascript' });
-            const blobUrl = URL.createObjectURL(blob);
-            
-            blobCache.set(absoluteUrl, blobUrl);
-            return blobUrl;
-        }
-        
-        async function findFileWithExtension(basePath) {
-            const potentialPaths = [ basePath, `${basePath}.ts`, `${basePath}.tsx`, `${basePath}/index.ts`, `${basePath}/index.tsx` ];
-            for (const path of potentialPaths) {
-                try {
-                    const response = await fetch(path, { method: 'HEAD' });
-                    if (response.ok) return path;
-                } catch(e) {}
-            }
-            return null;
-        }
-
-        try {
-            console.log('Iniciando carregamento da aplicação...');
-            const entryModuleUrl = await resolveAndTranspile('/index.tsx');
-            await import(entryModuleUrl);
-            console.log('Aplicação carregada com sucesso!');
-        } catch (error) {
-            console.error('Falha ao inicializar a aplicação:', error);
-            const rootEl = document.getElementById('root');
-            rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p><pre>${error.stack}</pre></div>`;
-        }
+        // Ponto de entrada: manda o SystemJS importar o arquivo principal.
+        // Ele vai gerenciar todo o processo de forma otimizada.
+        System.import('./index.tsx').catch(function(err) {
+            console.error('Erro ao inicializar a aplicação com SystemJS:', err);
+            // Remove o loader e mostra o erro
+            var rootEl = document.getElementById('root');
+            rootEl.innerHTML = '<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>' + err.message + '</p><pre>' + err.stack + '</pre></div>';
+        });
     </script>
 </body>
 </html>
