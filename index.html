@@ -22,10 +22,9 @@
   <meta property="twitter:description"
         content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
 
-  <!-- Otimizações de rede: Preconnects para todos os CDNs usados -->
+  <!-- Otimizações de rede: Preconnects -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://cdn.tailwindcss.com">
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="preconnect" href="https://esm.sh">
 
@@ -33,271 +32,204 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap"></noscript>
 
-  <!-- Prevenção de FOUC -->
+  <!-- Prevenção de FOUC (Flash of Unstyled Content) -->
   <style>body { visibility: hidden; opacity: 0; }</style>
 
-  <!-- Tailwind CDN (async para não bloquear, com config inline) -->
-  <script>
-    window.tailwind = { config: {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            heading: ['Sora', 'sans-serif'],
-          },
-          keyframes: {
-            'reveal-word': {
-              from: { opacity: '0', transform: 'translateY(10px)' },
-              to:   { opacity: '1', transform: 'translateY(0)' },
-            },
-            'letter-reveal': {
-              '0%':   { opacity: 0, transform: 'translateY(20px) scale(0.8)' },
-              '100%': { opacity: 1, transform: 'translateY(0) scale(1)' },
-            },
-            'logo-bar-1': {
-              '0%':   { transform: 'translateY(-40px)', opacity: 0 },
-              '100%': { transform: 'translateY(0)', opacity: 1 },
-            },
-            'logo-bar-2': {
-              '0%':   { transform: 'translateY(40px)', opacity: 0 },
-              '100%': { transform: 'translateY(0)', opacity: 1 },
-            },
-            'blob-animation': {
-              '0%':   { transform: 'translate(0px, 0px) scale(1)' },
-              '33%':  { transform: 'translate(30px, -50px) scale(1.1)' },
-              '66%':  { transform: 'translate(-20px, 20px) scale(0.9)' },
-              '100%': { transform: 'translate(0px, 0px) scale(1)' },
-            },
-            'fade-in': {
-              from: { opacity: 0 },
-              to:   { opacity: 1 },
-            },
-          },
-          animation: {
-            'reveal-word': 'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-            'letter-reveal': 'letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-            'logo-bar-1': 'logo-bar-1 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-            'logo-bar-2': 'logo-bar-2 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-            'blob': 'blob-animation 20s infinite ease-in-out',
-            'fade-in': 'fade-in 0.3s ease-in-out',
-          }
-        }
-      },
-      plugins: [
-        function ({ addUtilities }) {
-          addUtilities({
-            '.scrollbar-hide': {
-              '-ms-overflow-style': 'none',
-              'scrollbar-width': 'none',
-              '&::-webkit-scrollbar': { display: 'none' }
-            }
-          })
-        }
-      ]
-    }};
-  </script>
-  <script src="https://cdn.tailwindcss.com" async onload="tailwind.config = window.tailwind.config"></script>
-
-  <!-- Import map das libs -->
+  <!-- Import map das libs (esbuild saberá que são externas) -->
   <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@18.2.0",
-    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-    "@google/generative-ai": "https://esm.sh/@google/generative-ai@0.14.0",
-    "esbuild-wasm": "https://unpkg.com/esbuild-wasm@0.23.1"
+  {
+    "imports": {
+      "react": "https://esm.sh/react@18.2.0",
+      "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+      "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+      "@google/generative-ai": "https://esm.sh/@google/generative-ai@0.14.0"
+    }
   }
-}
-</script>
+  </script>
 
-  <!-- Estilos inline para tela de loading (replicando animações do Tailwind independentemente) -->
+  <!-- Estilos inline para tela de loading (para aparecer imediatamente) -->
   <style>
-    html { overflow-y: auto; }
-    @keyframes blob-animation {
-      0% { transform: translate(0px, 0px) scale(1); }
-      33% { transform: translate(30px, -50px) scale(1.1); }
-      66% { transform: translate(-20px, 20px) scale(0.9); }
-      100% { transform: translate(0px, 0px) scale(1); }
-    }
-    @keyframes fade-in {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    @keyframes letter-reveal {
-      0% { opacity: 0; transform: translateY(20px) scale(0.8); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    .animate-blob { animation: blob-animation 20s infinite ease-in-out; }
-    .animate-fade-in { animation: fade-in 0.3s ease-in-out; }
-    .animate-letter-reveal { animation: letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards; }
-    .letter { display: inline-block; }
+    @keyframes blob-animation { 0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.9); } 100% { transform: translate(0px, 0px) scale(1); } }
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes letter-reveal { 0% { opacity: 0; transform: translateY(20px) scale(0.8); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+    #loading .animate-blob { animation: blob-animation 20s infinite ease-in-out; }
+    #loading .animate-fade-in { animation: fade-in 0.3s ease-in-out; }
+    #loading .animate-letter-reveal { animation: letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards; }
+    #loading .letter { display: inline-block; }
   </style>
 
-  <!-- Preloads e modulepreloads para aceleração (carrega recursos em paralelo cedo) -->
-  <link rel="preload" href="/index.tsx" as="fetch" crossorigin="anonymous" />
-  <link rel="preload" href="https://cdn.tailwindcss.com" as="script" />
+  <!-- Preloads para os recursos mais críticos -->
+  <link rel="modulepreload" href="https://unpkg.com/esbuild-wasm@0.23.1/esbuild.wasm" />
   <link rel="modulepreload" href="https://unpkg.com/esbuild-wasm@0.23.1" />
-  <link rel="preload" href="https://unpkg.com/esbuild-wasm@0.23.1/esbuild.wasm" as="fetch" crossorigin="anonymous" />
   <link rel="modulepreload" href="https://esm.sh/react@18.2.0" />
   <link rel="modulepreload" href="https://esm.sh/react-dom@18.2.0/client" />
-  <link rel="modulepreload" href="https://esm.sh/react@18.2.0/jsx-runtime" />
-  <link rel="modulepreload" href="https://esm.sh/@google/generative-ai@0.14.0" />
-  <link rel="prefetch" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" as="style" />
 </head>
 <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
   <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
 
-  <!-- Tela de loading com animações replicadas (aparece imediatamente) -->
+  <!-- O loading é HTML/CSS puro, sem dependências de JS -->
   <div id="loading" class="fixed inset-0 bg-[#0B071A] flex flex-col items-center justify-center z-50 animate-fade-in">
     <div class="relative w-32 h-32 mb-4">
       <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full filter blur-xl opacity-70 animate-blob"></div>
     </div>
     <div class="text-3xl font-heading text-[#E0DDF0]">
-      <span class="letter animate-letter-reveal" style="animation-delay: 0s;">L</span>
-      <span class="letter animate-letter-reveal" style="animation-delay: 0.1s;">o</span>
-      <span class="letter animate-letter-reveal" style="animation-delay: 0.2s;">a</span>
-      <span class="letter animate-letter-reveal" style="animation-delay: 0.3s;">d</span>
-      <span class="letter animate-letter-reveal" style="animation-delay: 0.4s;">i</span>
-      <span class="letter animate-letter-reveal" style="animation-delay: 0.5s;">n</span>
-      <span class="letter animate-letter-reveal" style="animation-delay: 0.6s;">g</span>
-      <span class="letter animate-letter-reveal" style="animation-delay: 0.7s;">.</span>
-      <span class="letter animate-letter-reveal" style="animation-delay: 0.8s;">.</span>
-      <span class="letter animate-letter-reveal" style="animation-delay: 0.9s;">.</span>
+      <span class="letter animate-letter-reveal" style="animation-delay: 0s;">L</span><span class="letter animate-letter-reveal" style="animation-delay: 0.1s;">o</span><span class="letter animate-letter-reveal" style="animation-delay: 0.2s;">a</span><span class="letter animate-letter-reveal" style="animation-delay: 0.3s;">d</span><span class="letter animate-letter-reveal" style="animation-delay: 0.4s;">i</span><span class="letter animate-letter-reveal" style="animation-delay: 0.5s;">n</span><span class="letter animate-letter-reveal" style="animation-delay: 0.6s;">g</span><span class="letter animate-letter-reveal" style="animation-delay: 0.7s;">.</span><span class="letter animate-letter-reveal" style="animation-delay: 0.8s;">.</span><span class="letter animate-letter-reveal" style="animation-delay: 0.9s;">.</span>
     </div>
   </div>
 
   <div id="root"></div>
 
+  <!-- A MÁGICA ACONTECE AQUI -->
   <script type="module">
-    import * as esbuild from 'esbuild-wasm';
+    import * as esbuild from 'https://unpkg.com/esbuild-wasm@0.23.1';
 
+    // --- Funções de Cache com IndexedDB (MANTIDAS) ---
     const DB_NAME = 'AppCache';
     const DB_VERSION = 1;
-    const STORE_NAME = 'transpiledCode';
+    const STORE_NAME = 'sourceCode';
+    let db;
 
     async function openDB() {
+      if (db) return db;
       return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onerror = reject;
-        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          db = request.result;
+          resolve(db);
+        };
         request.onupgradeneeded = (event) => {
-          const db = event.target.result;
-          db.createObjectStore(STORE_NAME, { keyPath: 'url' });
+          const dbInstance = event.target.result;
+          if (!dbInstance.objectStoreNames.contains(STORE_NAME)) {
+            dbInstance.createObjectStore(STORE_NAME, { keyPath: 'url' });
+          }
         };
       });
     }
 
-    async function getCachedCode(db, absoluteUrl) {
-      return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readonly');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.get(absoluteUrl);
-        request.onsuccess = () => resolve(request.result ? request.result.code : null);
-        request.onerror = reject;
+    async function getCachedCode(url) {
+      const db = await openDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.get(url);
+        req.onsuccess = () => resolve(req.result ? req.result.code : null);
+        req.onerror = () => resolve(null); // Em caso de erro, apenas retorne null
       });
     }
 
-    async function cacheCode(db, absoluteUrl, code) {
-      return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readwrite');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.put({ url: absoluteUrl, code });
-        request.onsuccess = resolve;
-        request.onerror = reject;
-      });
+    async function cacheCode(url, code) {
+      const db = await openDB();
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      await store.put({ url, code });
     }
 
-    const blobCache = new Map();
+    // --- Plugin do ESBuild para carregar arquivos da Web ---
+    const webModulePlugin = {
+      name: 'web-module-plugin',
+      setup(build) {
+        // Intercepta imports de bibliotecas (ex: 'react') e marca como "externos".
+        // Isso diz ao esbuild para não tentar empacotá-los, deixando o importmap cuidar disso.
+        build.onResolve({ filter: /^[^./]/ }, args => ({
+          path: args.path,
+          external: true,
+        }));
 
-    async function loadSource(path, parentUrl) {
-      const baseUrl = new URL(path, parentUrl).href;
-      if (/\.(tsx?|jsx?)($|\?)/.test(baseUrl)) {
-        const res = await fetch(baseUrl, { cache: 'force-cache' });
-        if (!res.ok) throw new Error('Não foi possível carregar ' + baseUrl);
-        return { absoluteUrl: baseUrl, sourceCode: await res.text() };
-      }
-      const base = baseUrl.replace(/\/$/, '');
-      const candidates = [ base + '.tsx', base + '.ts', base + '/index.tsx', base + '/index.ts' ];
-      for (const url of candidates) {
-        try {
-          const res = await fetch(url, { cache: 'force-cache' });
-          if (res.ok) return { absoluteUrl: url, sourceCode: await res.text() };
-        } catch (_) {}
-      }
-      throw new Error('Não foi possível encontrar o arquivo para ' + baseUrl);
-    }
+        // Intercepta imports relativos (ex: './componente')
+        build.onResolve({ filter: /^\.\// }, args => ({
+            // resolvePath é o diretório do arquivo que está importando
+            // args.path é o caminho relativo (ex: './outro-arquivo')
+            // O resultado é a URL completa do arquivo a ser importado.
+            path: new URL(args.path, args.importer).href,
+            namespace: 'web-module',
+        }));
 
-    async function resolveAndTranspile(entryPath, parentUrl = window.location.href, db) {
-      const { absoluteUrl, sourceCode } = await loadSource(entryPath, parentUrl);
-      if (blobCache.has(absoluteUrl)) return blobCache.get(absoluteUrl);
+        // Intercepta o carregamento de qualquer arquivo no nosso namespace 'web-module'
+        build.onLoad({ filter: /.*/, namespace: 'web-module' }, async args => {
+          let url = new URL(args.path);
+          let source = await getCachedCode(url.href);
+          
+          if (!source) {
+            // Tenta adivinhar a extensão do arquivo, como um bundler de verdade faria.
+            const candidates = [
+                url.href,
+                `${url.href}.tsx`,
+                `${url.href}.ts`,
+                `${url.href}/index.tsx`,
+                `${url.href}/index.ts`
+            ];
 
-      const cachedCode = await getCachedCode(db, absoluteUrl);
-      if (cachedCode) {
-        const blobUrl = URL.createObjectURL(new Blob([cachedCode], { type: 'application/javascript' }));
-        blobCache.set(absoluteUrl, blobUrl);
-        return blobUrl;
-      }
+            let response;
+            for(const candidateUrl of candidates) {
+                try {
+                    response = await fetch(candidateUrl);
+                    if(response.ok) {
+                        url = new URL(candidateUrl); // Atualiza a URL para a que funcionou
+                        break;
+                    }
+                } catch(e){}
+            }
+            
+            if (!response || !response.ok) {
+              return { errors: [{ text: `Não foi possível encontrar o módulo em ${url.href}` }] };
+            }
 
-      const importRegex = /\bimport\s+[^'"]*['"](.*?)['"]/g;
-      const dependencies = new Map();
-      let match;
-      while ((match = importRegex.exec(sourceCode)) !== null) {
-        if (match[1].startsWith('.')) dependencies.set(match[1], null);
-      }
-      await Promise.all(
-        Array.from(dependencies.keys()).map(async (depPath) => {
-          const childBlobUrl = await resolveAndTranspile(depPath, absoluteUrl, db);
-          dependencies.set(depPath, childBlobUrl);
-        })
-      );
-      let transformedCode = sourceCode;
-      for (const [originalPath, blobUrl] of dependencies.entries()) {
-        transformedCode = transformedCode.replace(new RegExp(`(['"])${originalPath}\\1`, 'g'), `$1${blobUrl}$1`);
-      }
-      const loader = absoluteUrl.endsWith('.tsx') || absoluteUrl.endsWith('.jsx') ? 'tsx' : 'ts';
-      const result = await esbuild.transform(transformedCode, {
-        loader: loader,
-        jsx: 'automatic',
-        jsxImportSource: 'react',
-        target: 'es2020',
-        format: 'esm',
-        sourcemap: false,
-        minify: true,
-        treeShaking: true
-      });
-      const code = result.code;
-      await cacheCode(db, absoluteUrl, code);
-      const blobUrl = URL.createObjectURL(new Blob([code], { type: 'application/javascript' }));
-      blobCache.set(absoluteUrl, blobUrl);
-      return blobUrl;
-    }
+            source = await response.text();
+            await cacheCode(url.href, source);
+          }
 
+          // Determina o "loader" correto (tsx ou ts) baseado na extensão do arquivo.
+          const loader = url.pathname.endsWith('.tsx') ? 'tsx' : 'ts';
+          
+          return {
+            contents: source,
+            loader: loader,
+            // Informa ao próximo passo qual era a URL completa deste arquivo.
+            resolveDir: new URL('.', url).href,
+          };
+        });
+      },
+    };
+
+    // --- Lógica Principal de Inicialização ---
     (async () => {
       const rootEl = document.getElementById('root');
-      let db;
       try {
-        db = await openDB();
         const wasmURL = 'https://unpkg.com/esbuild-wasm@0.23.1/esbuild.wasm';
-        const response = await fetch(wasmURL, { cache: 'force-cache' });
-        if (!response.ok) throw new Error('Falha ao carregar WASM');
-        const wasmBuffer = await response.arrayBuffer();
-        const wasmModule = await WebAssembly.compile(wasmBuffer);
-        await esbuild.initialize({
-          wasmModule,
-          worker: false  // Executar no thread principal para evitar problemas
+        await esbuild.initialize({ wasmURL, worker: false });
+
+        const result = await esbuild.build({
+          entryPoints: ['./index.tsx'], // O ponto de entrada da sua aplicação
+          bundle: true,               // ESSENCIAL: diz para ele seguir os imports
+          write: false,               // Não escreve em disco, retorna o resultado na memória
+          format: 'esm',              // Formato de módulo padrão para navegadores
+          jsx: 'automatic',           // Configura o JSX para React 17+
+          jsxImportSource: 'react',
+          loader: { '.tsx': 'tsx' },  // Define o loader para o entrypoint
+          plugins: [webModulePlugin], // USA O PLUGIN!
+          minify: true,               // Minifica o código para produção
+          treeShaking: true,          // Remove código não utilizado
         });
-        const entryModuleUrl = await resolveAndTranspile('/index.tsx', window.location.href, db);
-        await import(entryModuleUrl);
+
+        // O resultado é um arquivo JS completo e empacotado
+        const bundledCode = result.outputFiles[0].text;
+        
+        // Cria uma URL temporária para o nosso código e o importa como um módulo
+        const blob = new Blob([bundledCode], { type: 'application/javascript' });
+        const objectURL = URL.createObjectURL(blob);
+        await import(objectURL);
+        URL.revokeObjectURL(objectURL); // Libera a memória após o uso
+
       } catch (error) {
         console.error('Falha ao inicializar a aplicação:', error);
-        rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.stack || error.message}</p></div>`;
+        rootEl.innerHTML = `<div style="background:#2b0f0f;color:#ff8b8b;padding:20px;border-radius:8px;font-family:monospace;white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.stack || error.message}</p></div>`;
       } finally {
-        if (db) db.close();
         document.getElementById('loading').remove();
         document.body.style.transition = 'opacity 0.2s ease-in-out';
         document.body.style.visibility = 'visible';
         document.body.style.opacity = '1';
+        if(db) db.close(); // Fecha a conexão com o banco de dados
       }
     })();
   </script>
