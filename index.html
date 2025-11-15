@@ -10,119 +10,164 @@
   <title>fillshy - Autonomous AI Content Pipeline</title>
   <meta name="description"
         content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
-  <!-- ... (suas outras metatags SEO) ... -->
-  
-  <!-- Fonts -->
+  <link rel="canonical" href="./" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="./" />
+  <meta property="og:title" content="fillshy - Autonomous AI Content Pipeline" />
+  <meta property="og:description"
+        content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="./" />
+  <meta property="twitter:title" content="fillshy - Autonomous AI Content Pipeline" />
+  <meta property="twitter:description"
+        content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
+
+  <!-- Otimizações de rede: Preconnects adicionais para CDNs usados -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap"
-    rel="stylesheet" media="print" onload="this.media='all'">
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" rel="stylesheet"></noscript>
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://esm.sh">
 
-  <!-- =================================================================== -->
-  <!-- CSS DO LOADER IMEDIATO (Réplica da sua animação Tailwind)           -->
-  <!-- Isso executa instantaneamente, eliminando a tela branca.            -->
-  <!-- =================================================================== -->
-  <style>
-    /* Estilos base para garantir que não haja "pulos" de layout/cor */
-    html { overflow-y: auto; }
-    body {
-      background-color: #0B071A; /* Mesmo do seu Tailwind */
-      color: #E0DDF0;
-      font-family: 'Inter', sans-serif;
-    }
+  <!-- Fonts com carregamento não-bloqueante -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap"></noscript>
 
-    /* Oculta a aplicação React até que ela esteja PRONTA */
-    #root {
-      opacity: 0;
-      transition: opacity 0.5s ease-in-out;
-    }
-    
-    /* Estilos do loader/pré-carregador */
-    #loader {
-      position: fixed;
-      inset: 0; /* Ocupa a tela inteira */
-      z-index: 9999;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-color: #0B071A;
-      transition: opacity 0.5s ease-in-out; /* Para sumir suavemente */
-    }
-    .loader-logo {
-      position: relative;
-      width: 48px;
-      height: 48px;
-    }
-    .loader-logo::before,
-    .loader-logo::after {
-      content: '';
-      position: absolute;
-      width: 16px;
-      height: 100%;
-      background-color: #E0DDF0;
-      border-radius: 8px;
-      opacity: 0;
-    }
-    .loader-logo::before {
-      left: 0;
-      /* Aplica a animação 'logo-bar-1' definida abaixo */
-      animation: loader-logo-bar-1 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
-    }
-    .loader-logo::after {
-      right: 0;
-      /* Aplica a animação 'logo-bar-2' e adiciona um pequeno delay */
-      animation: loader-logo-bar-2 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
-      animation-delay: 0.15s;
-    }
+  <!-- Prevenção de FOUC -->
+  <style>body { visibility: hidden; opacity: 0; }</style>
 
-    /* Keyframes replicados do seu Tailwind.config */
-    @keyframes loader-logo-bar-1 {
-      '0%':   { transform: translateY(-40px)', opacity: 0 }
-      '100%': { transform: translateY(0)', opacity: 1 }
-    }
-    @keyframes loader-logo-bar-2 {
-      '0%':   { transform: translateY(40px)', opacity: 0 }
-      '100%': { transform: translateY(0)', opacity: 1 }
-    }
-  </style>
-
-  <!-- Pré-carrega o entry point, boa prática que você já tinha -->
-  <link rel="preload" href="/index.tsx" as="fetch" crossorigin="anonymous" />
-  
-  <!-- Tailwind CDN (carregado com 'defer' para não bloquear) -->
-  <script src="https://cdn.tailwindcss.com" defer></script>
+  <!-- Tailwind CDN (síncrono para CSS early injection) -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // Sua CONFIGURAÇÃO DO TAILWIND permanece INTACTA
     tailwind.config = {
-      theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Sora', 'sans-serif'], }, keyframes: { 'reveal-word': { from: { opacity: '0', transform: 'translateY(10px)' }, to:   { opacity: '1', transform: 'translateY(0)' }, }, 'letter-reveal': { '0%':   { opacity: 0, transform: 'translateY(20px) scale(0.8)' }, '100%': { opacity: 1, transform: 'translateY(0) scale(1)' }, }, 'logo-bar-1': { '0%':   { transform: 'translateY(-40px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 }, }, 'logo-bar-2': { '0%':   { transform: 'translateY(40px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 }, }, 'blob-animation': { '0%':   { transform: 'translate(0px, 0px) scale(1)' }, '33%':  { transform: 'translate(30px, -50px) scale(1.1)' }, '66%':  { transform: 'translate(-20px, 20px) scale(0.9)' }, '100%': { transform: 'translate(0px, 0px) scale(1)' }, }, 'fade-in': { from: { opacity: 0 }, to:   { opacity: 1 }, }, }, animation: { 'reveal-word': 'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'letter-reveal': 'letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'logo-bar-1': 'logo-bar-1 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'logo-bar-2': 'logo-bar-2 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'blob': 'blob-animation 20s infinite ease-in-out', 'fade-in': 'fade-in 0.3s ease-in-out', } } },
-      plugins: [ function ({ addUtilities }) { addUtilities({ '.scrollbar-hide': { '-ms-overflow-style': 'none', 'scrollbar-width': 'none', '&::-webkit-scrollbar': { display: 'none' } } }) } ]
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Sora', 'sans-serif'],
+          },
+          keyframes: {
+            'reveal-word': {
+              from: { opacity: '0', transform: 'translateY(10px)' },
+              to:   { opacity: '1', transform: 'translateY(0)' },
+            },
+            'letter-reveal': {
+              '0%':   { opacity: 0, transform: 'translateY(20px) scale(0.8)' },
+              '100%': { opacity: 1, transform: 'translateY(0) scale(1)' },
+            },
+            'logo-bar-1': {
+              '0%':   { transform: 'translateY(-40px)', opacity: 0 },
+              '100%': { transform: 'translateY(0)', opacity: 1 },
+            },
+            'logo-bar-2': {
+              '0%':   { transform: 'translateY(40px)', opacity: 0 },
+              '100%': { transform: 'translateY(0)', opacity: 1 },
+            },
+            'blob-animation': {
+              '0%':   { transform: 'translate(0px, 0px) scale(1)' },
+              '33%':  { transform: 'translate(30px, -50px) scale(1.1)' },
+              '66%':  { transform: 'translate(-20px, 20px) scale(0.9)' },
+              '100%': { transform: 'translate(0px, 0px) scale(1)' },
+            },
+            'fade-in': {
+              from: { opacity: 0 },
+              to:   { opacity: 1 },
+            },
+          },
+          animation: {
+            'reveal-word': 'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+            'letter-reveal': 'letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+            'logo-bar-1': 'logo-bar-1 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+            'logo-bar-2': 'logo-bar-2 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+            'blob': 'blob-animation 20s infinite ease-in-out',
+            'fade-in': 'fade-in 0.3s ease-in-out',
+          }
+        }
+      },
+      plugins: [
+        function ({ addUtilities }) {
+          addUtilities({
+            '.scrollbar-hide': {
+              '-ms-overflow-style': 'none',
+              'scrollbar-width': 'none',
+              '&::-webkit-scrollbar': { display: 'none' }
+            }
+          })
+        }
+      ]
     }
   </script>
-
-  <!-- Babel Standalone -->
-  <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
 
   <!-- Import map das libs -->
   <script type="importmap">
-    { "imports": { "react": "https://esm.sh/react@18.2.0", "react-dom/client": "https://esm.sh/react-dom@18.2.0/client", "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime", "@google/genai": "https://esm.sh/@google/genai@0.14.0" } }
-  </script>
-</head>
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "@google/genai": "https://esm.sh/@google/genai@0.14.0",
+    "esbuild-wasm": "https://unpkg.com/esbuild-wasm@latest"
+  }
+}
+</script>
 
+  <!-- Estilos inline para tela de loading (replicando animações do Tailwind) -->
+  <style>
+    html { overflow-y: auto; }
+    @keyframes blob-animation {
+      0% { transform: translate(0px, 0px) scale(1); }
+      33% { transform: translate(30px, -50px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+      100% { transform: translate(0px, 0px) scale(1); }
+    }
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes letter-reveal {
+      0% { opacity: 0; transform: translateY(20px) scale(0.8); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .animate-blob { animation: blob-animation 20s infinite ease-in-out; }
+    .animate-fade-in { animation: fade-in 0.3s ease-in-out; }
+    .animate-letter-reveal { animation: letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards; }
+    .letter { display: inline-block; }
+  </style>
+
+  <!-- Preloads adicionais para aceleração -->
+  <link rel="preload" href="/index.tsx" as="fetch" crossorigin="anonymous" />
+  <link rel="modulepreload" href="https://esm.sh/react@18.2.0" />
+  <link rel="modulepreload" href="https://esm.sh/react-dom@18.2.0/client" />
+  <link rel="modulepreload" href="https://unpkg.com/esbuild-wasm@latest" />
+  <link rel="preload" href="https://unpkg.com/esbuild-wasm@latest/esbuild.wasm" as="fetch" crossorigin="anonymous" />
+</head>
 <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
   <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
-  
-  <!-- Loader que aparece instantaneamente para o usuário -->
-  <div id="loader">
-    <div class="loader-logo"></div>
+
+  <!-- Tela de loading com animações replicadas -->
+  <div id="loading" class="fixed inset-0 bg-[#0B071A] flex flex-col items-center justify-center z-50 animate-fade-in">
+    <div class="relative w-32 h-32 mb-4">
+      <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full filter blur-xl opacity-70 animate-blob"></div>
+    </div>
+    <div class="text-3xl font-heading text-[#E0DDF0]">
+      <span class="letter" style="animation-delay: 0s;">L</span>
+      <span class="letter" style="animation-delay: 0.1s;">o</span>
+      <span class="letter" style="animation-delay: 0.2s;">a</span>
+      <span class="letter" style="animation-delay: 0.3s;">d</span>
+      <span class="letter" style="animation-delay: 0.4s;">i</span>
+      <span class="letter" style="animation-delay: 0.5s;">n</span>
+      <span class="letter" style="animation-delay: 0.6s;">g</span>
+      <span class="letter" style="animation-delay: 0.7s;">.</span>
+      <span class="letter" style="animation-delay: 0.8s;">.</span>
+      <span class="letter" style="animation-delay: 0.9s;">.</span>
+    </div>
   </div>
 
-  <!-- Raiz da aplicação React, começa invisível -->
   <div id="root"></div>
 
   <script type="module">
-    // SEU SCRIPT FOI 100% PRESERVADO. A ÚNICA MUDANÇA É NO 'FINALLY'
+    import * as esbuild from 'esbuild-wasm';
+
     const blobCache = new Map();
 
     async function loadSource(path, parentUrl) {
@@ -133,13 +178,11 @@
         return { absoluteUrl: baseUrl, sourceCode: await res.text() };
       }
       const base = baseUrl.replace(/\/$/, '');
-      const candidates = [
-        base + '.tsx', base + '.ts', base + '/index.tsx', base + '/index.ts',
-      ];
+      const candidates = [base + '.tsx', base + '.ts', base + '/index.tsx', base + '/index.ts'];
       for (const url of candidates) {
         try {
           const res = await fetch(url);
-          if (res.ok) { return { absoluteUrl: url, sourceCode: await res.text() }; }
+          if (res.ok) return { absoluteUrl: url, sourceCode: await res.text() };
         } catch (_) {}
       }
       throw new Error('Não foi possível encontrar o arquivo para ' + baseUrl);
@@ -147,12 +190,12 @@
 
     async function resolveAndTranspile(entryPath, parentUrl = window.location.href) {
       const { absoluteUrl, sourceCode } = await loadSource(entryPath, parentUrl);
-      if (blobCache.has(absoluteUrl)) { return blobCache.get(absoluteUrl); }
+      if (blobCache.has(absoluteUrl)) return blobCache.get(absoluteUrl);
       const importRegex = /\bimport\s+[^'"]*['"](.*?)['"]/g;
       const dependencies = new Map();
       let match;
       while ((match = importRegex.exec(sourceCode)) !== null) {
-        if (match[1].startsWith('.')) { dependencies.set(match[1], null); }
+        if (match[1].startsWith('.')) dependencies.set(match[1], null);
       }
       await Promise.all(
         Array.from(dependencies.keys()).map(async (depPath) => {
@@ -162,45 +205,39 @@
       );
       let transformedCode = sourceCode;
       for (const [originalPath, blobUrl] of dependencies.entries()) {
-        const re = new RegExp(`(['"])${originalPath}\\1`, 'g');
-        transformedCode = transformedCode.replace(re, `$1${blobUrl}$1`);
+        transformedCode = transformedCode.replace(new RegExp(`(['"])${originalPath}\\1`, 'g'), `$1${blobUrl}$1`);
       }
-      const { code } = Babel.transform(transformedCode, {
-        presets: [ ['react', { runtime: 'automatic' }], ['typescript', { allExtensions: true, isTSX: true }] ],
-        sourceType: 'module', filename: absoluteUrl
+      const loader = absoluteUrl.endsWith('.tsx') || absoluteUrl.endsWith('.jsx') ? 'tsx' : 'ts';
+      const result = await esbuild.transform(transformedCode, {
+        loader: loader,
+        jsx: 'automatic',
+        jsxImportSource: 'react',
+        target: 'es2020',
+        format: 'esm',
+        sourcemap: false
       });
-      const blobUrl = URL.createObjectURL(
-        new Blob([code], { type: 'application/javascript' })
-      );
+      const code = result.code;
+      const blobUrl = URL.createObjectURL(new Blob([code], { type: 'application/javascript' }));
       blobCache.set(absoluteUrl, blobUrl);
       return blobUrl;
     }
 
     (async () => {
       const rootEl = document.getElementById('root');
-      const loaderEl = document.getElementById('loader');
       try {
+        await esbuild.initialize({
+          wasmURL: 'https://unpkg.com/esbuild-wasm@latest/esbuild.wasm'
+        });
         const entryModuleUrl = await resolveAndTranspile('/index.tsx');
         await import(entryModuleUrl);
-
+        document.getElementById('loading').remove();
       } catch (error) {
         console.error('Falha ao inicializar a aplicação:', error);
         rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p></div>`;
-
       } finally {
-        // ---- AQUI ESTÁ A MÁGICA ----
-        // Quando a aplicação React está pronta (mesmo que com erro)...
-
-        // 1. Mostra a div #root com a aplicação React.
-        rootEl.style.opacity = '1';
-
-        // 2. Esconde o loader.
-        loaderEl.style.opacity = '0';
-        
-        // 3. Remove o loader da página após a animação de fade-out terminar.
-        setTimeout(() => {
-          loaderEl.remove();
-        }, 500); // Duração igual à transição do CSS (0.5s)
+        document.body.style.transition = 'opacity 0.2s ease-in-out';
+        document.body.style.visibility = 'visible';
+        document.body.style.opacity = '1';
       }
     })();
   </script>
