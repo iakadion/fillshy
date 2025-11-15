@@ -1,209 +1,227 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0B071A" />
-    
-    <!-- SEO e Metatags -->
-    <title>fillshy - Autonomous AI Content Pipeline</title>
-    <meta name="description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
-    <!-- ... (outras metatags que você tinha) ... -->
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0B071A" />
 
-    <!-- Otimizações de rede -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net">
-    <link rel="preconnect" href="https://unpkg.com">
-    <link rel="preconnect" href="https://esm.sh">
+  <!-- SEO -->
+  <title>fillshy - Autonomous AI Content Pipeline</title>
+  <meta name="description"
+        content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
+  <link rel="canonical" href="./" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="./" />
+  <meta property="og:title" content="fillshy - Autonomous AI Content Pipeline" />
+  <meta property="og:description"
+        content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="./" />
+  <meta property="twitter:title" content="fillshy - Autonomous AI Content Pipeline" />
+  <meta property="twitter:description"
+        content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
 
-    <!-- Carregamento de fontes não-bloqueante -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap"></noscript>
-    
-    <!-- =================================================================== -->
-    <!-- ESTILO PARA O LOADER IMEDIATO (FIM DA TELA BRANCA) -->
-    <!-- =================================================================== -->
-    <style>
-      /* Estilos base para evitar "pulos" na renderização */
-      body {
-        background-color: #0B071A;
-        color: #E0DDF0;
-        font-family: 'Inter', sans-serif;
-      }
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap"
+    rel="stylesheet">
 
-      /* Oculta a aplicação React até que ela esteja totalmente pronta */
-      #root {
-        opacity: 0;
-        transition: opacity 0.5s ease-in-out;
-      }
-      
-      /* Estilos do pré-carregador */
-      #loader {
-        position: fixed;
-        inset: 0;
-        z-index: 9999;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: #0B071A;
-        transition: opacity 0.5s ease-in-out;
-      }
-      .loader-logo {
-        position: relative;
-        width: 48px;
-        height: 48px;
-      }
-      .loader-logo::before,
-      .loader-logo::after {
-        content: '';
-        position: absolute;
-        width: 16px;
-        height: 100%;
-        background-color: #E0DDF0;
-        border-radius: 8px;
-        opacity: 0;
-      }
-      .loader-logo::before {
-        left: 0;
-        animation: logo-bar-1 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
-      }
-      .loader-logo::after {
-        right: 0;
-        animation: logo-bar-2 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
-        animation-delay: 0.15s; /* Pequeno atraso para ficar mais elegante */
-      }
-
-      /* Keyframes da animação, copiados diretamente da sua config do Tailwind */
-      @keyframes logo-bar-1 {
-        from { transform: translateY(-40px); opacity: 0; }
-        to   { transform: translateY(0); opacity: 1; }
-      }
-      @keyframes logo-bar-2 {
-        from { transform: translateY(40px); opacity: 0; }
-        to   { transform: translateY(0); opacity: 1; }
-      }
-    </style>
-
-    <!-- Scripts carregados de forma otimizada -->
-    <script src="https://cdn.tailwindcss.com" defer></script>
-    <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
-
-    <!-- Config do Tailwind e Import Map (sem alterações) -->
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: { sans: ['Inter','sans-serif'], heading: ['Sora','sans-serif'] },
-            keyframes: { 'reveal-word':{from:{opacity:'0',transform:'translateY(10px)'},to:{opacity:'1',transform:'translateY(0)'}}, 'letter-reveal':{'0%':{opacity:0,transform:'translateY(20px) scale(0.8)'},'100%':{opacity:1,transform:'translateY(0) scale(1)'}}, 'logo-bar-1':{'0%':{transform:'translateY(-40px)',opacity:0},'100%':{transform:'translateY(0)',opacity:1}}, 'logo-bar-2':{'0%':{transform:'translateY(40px)',opacity:0},'100%':{transform:'translateY(0)',opacity:1}}, 'blob-animation':{'0%':{transform:'translate(0px, 0px) scale(1)'},'33%':{transform:'translate(30px, -50px) scale(1.1)'},'66%':{transform:'translate(-20px, 20px) scale(0.9)'},'100%':{transform:'translate(0px, 0px) scale(1)'}}, 'fade-in':{from:{opacity:0},to:{opacity:1}} },
-            animation: { 'reveal-word':'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'letter-reveal':'letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'logo-bar-1':'logo-bar-1 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'logo-bar-2':'logo-bar-2 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards', 'blob':'blob-animation 20s infinite ease-in-out', 'fade-in':'fade-in 0.3s ease-in-out' }
+  <!-- Tailwind CDN (como você já usava) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Sora', 'sans-serif'],
+          },
+          keyframes: {
+            'reveal-word': {
+              from: { opacity: '0', transform: 'translateY(10px)' },
+              to:   { opacity: '1', transform: 'translateY(0)' },
+            },
+            'letter-reveal': {
+              '0%':   { opacity: 0, transform: 'translateY(20px) scale(0.8)' },
+              '100%': { opacity: 1, transform: 'translateY(0) scale(1)' },
+            },
+            'logo-bar-1': {
+              '0%':   { transform: 'translateY(-40px)', opacity: 0 },
+              '100%': { transform: 'translateY(0)', opacity: 1 },
+            },
+            'logo-bar-2': {
+              '0%':   { transform: 'translateY(40px)', opacity: 0 },
+              '100%': { transform: 'translateY(0)', opacity: 1 },
+            },
+            'blob-animation': {
+              '0%':   { transform: 'translate(0px, 0px) scale(1)' },
+              '33%':  { transform: 'translate(30px, -50px) scale(1.1)' },
+              '66%':  { transform: 'translate(-20px, 20px) scale(0.9)' },
+              '100%': { transform: 'translate(0px, 0px) scale(1)' },
+            },
+            'fade-in': {
+              from: { opacity: 0 },
+              to:   { opacity: 1 },
+            },
+          },
+          animation: {
+            'reveal-word': 'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+            'letter-reveal': 'letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+            'logo-bar-1': 'logo-bar-1 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+            'logo-bar-2': 'logo-bar-2 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+            'blob': 'blob-animation 20s infinite ease-in-out',
+            'fade-in': 'fade-in 0.3s ease-in-out',
           }
-        },
-        plugins: [ function({addUtilities}){addUtilities({'.scrollbar-hide':{'-ms-overflow-style':'none','scrollbar-width':'none','&::-webkit-scrollbar':{display:'none'}}})} ]
-      }
-    </script>
-    <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@18.2.0",
-        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-        "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-        "@google/genai": "https://esm.sh/@google/genai@0.14.0"
-      }
+        }
+      },
+      plugins: [
+        function ({ addUtilities }) {
+          addUtilities({
+            '.scrollbar-hide': {
+              '-ms-overflow-style': 'none',
+              'scrollbar-width': 'none',
+              '&::-webkit-scrollbar': { display: 'none' }
+            }
+          })
+        }
+      ]
     }
-    </script>
+  </script>
+
+  <!-- Babel Standalone -->
+  <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+
+  <!-- Import map das libs -->
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "@google/genai": "https://esm.sh/@google/genai@0.14.0"
+  }
+}
+</script>
+
+  <style>
+    html { overflow-y: auto; }
+  </style>
+
+  <!-- Pré-carrega o entry (ajuda um pouco no tempo total) -->
+  <link rel="preload" href="/index.tsx" as="fetch" crossorigin="anonymous" />
 </head>
 <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
-    <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
-    
-    <!-- O loader que aparece imediatamente -->
-    <div id="loader">
-      <div class="loader-logo"></div>
-    </div>
+  <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
+  <div id="root"></div>
 
-    <!-- A aplicação React será renderizada aqui, mas começa invisível -->
-    <div id="root"></div>
+  <script type="module">
+    const blobCache = new Map();
 
-    <!-- Script principal (a lógica interna está correta) com controle do loader -->
-    <script type="module">
-        const blobCache = new Map();
+    // Carrega o arquivo TS/TSX, tentando extensões padrão (.tsx, .ts, /index.tsx, /index.ts)
+    async function loadSource(path, parentUrl) {
+      const baseUrl = new URL(path, parentUrl).href;
 
-        async function loadSource(path, parentUrl) {
-            // ... (sua função loadSource original, sem alterações)
-            const baseUrl = new URL(path, parentUrl).href;
-            if (/\.(tsx?|jsx?)($|\?)/.test(baseUrl)) {
-                const res = await fetch(baseUrl);
-                if (!res.ok) throw new Error('Não foi possível carregar ' + baseUrl);
-                return { absoluteUrl: baseUrl, sourceCode: await res.text() };
-            }
-            const base = baseUrl.replace(/\/$/, '');
-            const candidates = [ base + '.tsx', base + '.ts', base + '/index.tsx', base + '/index.ts' ];
-            for (const url of candidates) {
-                try {
-                    const res = await fetch(url);
-                    if (res.ok) return { absoluteUrl: url, sourceCode: await res.text() };
-                } catch (_) {}
-            }
-            throw new Error('Não foi possível encontrar o arquivo para ' + baseUrl);
+      // Se já tem extensão, tenta direto
+      if (/\.(tsx?|jsx?)($|\?)/.test(baseUrl)) {
+        const res = await fetch(baseUrl);
+        if (!res.ok) throw new Error('Não foi possível carregar ' + baseUrl);
+        return { absoluteUrl: baseUrl, sourceCode: await res.text() };
+      }
+
+      const base = baseUrl.replace(/\/$/, '');
+      const candidates = [
+        base + '.tsx',
+        base + '.ts',
+        base + '/index.tsx',
+        base + '/index.ts',
+      ];
+
+      for (const url of candidates) {
+        try {
+          const res = await fetch(url);
+          if (res.ok) {
+            return { absoluteUrl: url, sourceCode: await res.text() };
+          }
+        } catch (_) {
+          // ignora, tenta o próximo
         }
+      }
 
-        async function resolveAndTranspile(entryPath, parentUrl = window.location.href) {
-            // ... (sua função resolveAndTranspile original, sem alterações)
-            const { absoluteUrl, sourceCode } = await loadSource(entryPath, parentUrl);
-            if (blobCache.has(absoluteUrl)) return blobCache.get(absoluteUrl);
-            const importRegex = /\bimport\s+[^'"]*['"](.*?)['"]/g;
-            const dependencies = new Map();
-            let match;
-            while ((match = importRegex.exec(sourceCode)) !== null) {
-                if (match[1].startsWith('.')) dependencies.set(match[1], null);
-            }
-            await Promise.all(
-                Array.from(dependencies.keys()).map(async (depPath) => {
-                    const childBlobUrl = await resolveAndTranspile(depPath, absoluteUrl);
-                    dependencies.set(depPath, childBlobUrl);
-                })
-            );
-            let transformedCode = sourceCode;
-            for (const [originalPath, blobUrl] of dependencies.entries()) {
-                transformedCode = transformedCode.replace(new RegExp(`(['"])${originalPath}\\1`, 'g'), `$1${blobUrl}$1`);
-            }
-            const { code } = Babel.transform(transformedCode, {
-                presets: [['react',{runtime:'automatic'}],['typescript',{allExtensions:true,isTSX:true}]],
-                sourceType: 'module',
-                filename: absoluteUrl
-            });
-            const blobUrl = URL.createObjectURL(new Blob([code],{type:'application/javascript'}));
-            blobCache.set(absoluteUrl, blobUrl);
-            return blobUrl;
+      throw new Error('Não foi possível encontrar o arquivo para ' + baseUrl);
+    }
+
+    async function resolveAndTranspile(entryPath, parentUrl = window.location.href) {
+      // 1) Descobre o arquivo real (.tsx/.ts) e lê o código-fonte
+      const { absoluteUrl, sourceCode } = await loadSource(entryPath, parentUrl);
+
+      // Cache por arquivo real (URL com extensão)
+      if (blobCache.has(absoluteUrl)) {
+        return blobCache.get(absoluteUrl);
+      }
+
+      // 2) Descobre imports relativos (somente "import ... from '...';")
+      const importRegex = /\bimport\s+[^'"]*['"](.*?)['"]/g;
+      const dependencies = new Map();
+      let match;
+      while ((match = importRegex.exec(sourceCode)) !== null) {
+        const depPath = match[1];
+        if (depPath.startsWith('.')) {
+          dependencies.set(depPath, null);
         }
+      }
 
-        (async () => {
-            const rootEl = document.getElementById('root');
-            const loaderEl = document.getElementById('loader');
+      // 3) Resolve recursivamente as dependências em paralelo
+      await Promise.all(
+        Array.from(dependencies.keys()).map(async (depPath) => {
+          const childBlobUrl = await resolveAndTranspile(depPath, absoluteUrl);
+          dependencies.set(depPath, childBlobUrl);
+        })
+      );
 
-            try {
-                // Seu processo de transpilação e importação continua o mesmo
-                const entryModuleUrl = await resolveAndTranspile('/index.tsx');
-                await import(entryModuleUrl);
-            } catch (error) {
-                console.error('Falha ao inicializar a aplicação:', error);
-                rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p></div>`;
-            } finally {
-                // Quando tudo terminar (com sucesso ou erro)...
-                
-                // 1. Mostra a aplicação React
-                rootEl.style.opacity = '1';
+      // 4) Reescreve os imports locais para apontar para os blobs
+      let transformedCode = sourceCode;
+      for (const [originalPath, blobUrl] of dependencies.entries()) {
+        const re = new RegExp(`(['"])${originalPath}\\1`, 'g');
+        transformedCode = transformedCode.replace(re, `$1${blobUrl}$1`);
+      }
 
-                // 2. Esconde o loader
-                loaderEl.style.opacity = '0';
-                
-                // 3. Remove completamente o loader da página após a transição de fade-out
-                setTimeout(() => {
-                    loaderEl.remove();
-                }, 500); // 500ms = 0.5s (duração da transição definida no CSS)
-            }
-        })();
-    </script>
+      // 5) Transpila TSX -> JS com Babel (React + TypeScript)
+      const { code } = Babel.transform(transformedCode, {
+        presets: [
+          ['react', { runtime: 'automatic' }],
+          ['typescript', { allExtensions: true, isTSX: true }]
+        ],
+        sourceType: 'module',
+        filename: absoluteUrl
+      });
+
+      // 6) Cria um Blob URL para esse módulo e guarda em cache
+      const blobUrl = URL.createObjectURL(
+        new Blob([code], { type: 'application/javascript' })
+      );
+
+      blobCache.set(absoluteUrl, blobUrl);
+      return blobUrl;
+    }
+
+    (async () => {
+      try {
+        // Entrada da app: ajuste aqui se seu entry não for /index.tsx
+        const entryModuleUrl = await resolveAndTranspile('/index.tsx');
+        await import(entryModuleUrl);
+      } catch (error) {
+        console.error('Falha ao inicializar a aplicação:', error);
+        const rootEl = document.getElementById('root');
+        rootEl.innerHTML =
+          `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;">
+             <h2>Erro na Aplicação</h2>
+             <p>${error.message}</p>
+           </div>`;
+      }
+    })();
+  </script>
 </body>
 </html>
