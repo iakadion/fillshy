@@ -1,145 +1,149 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
+<html lang="pt-BR">
+<head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0B071A" />
     
     <!-- SEO and Social Sharing Meta Tags -->
     <title>fillshy - Autonomous AI Content Pipeline</title>
-    <meta
-      name="description"
-      content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository."
-    />
+    <meta name="description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
     <link rel="canonical" href="./" />
-
-    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="./" />
     <meta property="og:title" content="fillshy - Autonomous AI Content Pipeline" />
     <meta property="og:description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
-    
-    <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="./" />
     <meta property="twitter:title" content="fillshy - Autonomous AI Content Pipeline" />
     <meta property="twitter:description" content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
 
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" rel="stylesheet">
-
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         theme: {
           extend: {
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              heading: ['Sora', 'sans-serif'],
-            },
+            fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Sora', 'sans-serif'] },
             keyframes: {
-              'reveal-word': {
-                'from': { opacity: '0', transform: 'translateY(10px)' },
-                'to': { opacity: '1', transform: 'translateY(0)' },
-              },
-              'letter-reveal': {
-                '0%': { opacity: 0, transform: 'translateY(20px) scale(0.8)' },
-                '100%': { opacity: 1, transform: 'translateY(0) scale(1)' },
-              },
-              'logo-bar-1': {
-                '0%': { transform: 'translateY(-40px)', opacity: 0 },
-                '100%': { transform: 'translateY(0)', opacity: 1 },
-              },
-              'logo-bar-2': {
-                '0%': { transform: 'translateY(40px)', opacity: 0 },
-                '100%': { transform: 'translateY(0)', opacity: 1 },
-              },
-              'blob-animation': {
-                '0%': { transform: 'translate(0px, 0px) scale(1)' },
-                '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
-                '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-                '100%': { transform: 'translate(0px, 0px) scale(1)' },
-              },
-              'fade-in': {
-                'from': { opacity: 0 },
-                'to': { opacity: 1 },
-              },
+              'reveal-word': { 'from': { opacity: '0', transform: 'translateY(10px)' }, 'to': { opacity: '1', transform: 'translateY(0)' } },
+              'letter-reveal': { '0%': { opacity: 0, transform: 'translateY(20px) scale(0.8)' }, '100%': { opacity: 1, transform: 'translateY(0) scale(1)' } },
             },
             animation: {
               'reveal-word': 'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
               'letter-reveal': 'letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-              'logo-bar-1': 'logo-bar-1 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-              'logo-bar-2': 'logo-bar-2 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-              'blob': 'blob-animation 20s infinite ease-in-out',
-              'fade-in': 'fade-in 0.3s ease-in-out',
-            }
-          }
-        },
-        plugins: [
-            function({ addUtilities }) {
-                addUtilities({
-                    '.scrollbar-hide': {
-                        /* IE and Edge */
-                        '-ms-overflow-style': 'none',
-                        /* Firefox */
-                        'scrollbar-width': 'none',
-                        /* Safari and Chrome */
-                        '&::-webkit-scrollbar': {
-                            display: 'none'
-                        }
-                    }
-                })
-            }
-        ]
-      }
-    </script>
-    <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@18.2.0",
-    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-    "@google/genai": "https://esm.sh/@google/genai@0.14.0",
-    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
-    "react/": "https://esm.sh/react@18.2.0/"
-  }
-}
-</script>
-    <style>
-      html {
-        overflow-y: auto;
-      }
-    </style>
-</head>
-  <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <script src="https://unpkg.com/systemjs@6.14.3/dist/s.min.js"></script>
-    <script src="https://unpkg.com/systemjs-plugin-babel@0.0.25/plugin-babel.js"></script>
-    <script>
-      System.config({
-        transpiler: 'plugin-babel',
-        packages: {
-          './': {
-            defaultExtension: 'tsx'
-          }
-        },
-        meta: {
-          '*.tsx': {
-            babelOptions: {
-              react: true,
-              typescript: true
-            }
-          },
-          '*.ts': {
-             babelOptions: {
-              typescript: true
             }
           }
         }
-      });
-      System.import('./index.tsx');
+      }
     </script>
-  </body>
+
+    <!-- Custom Styles -->
+    <style>
+      html { overflow-y: auto; }
+      .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      .scrollbar-hide::-webkit-scrollbar { display: none; }
+    </style>
+
+    <!-- Babel Standalone é a única ferramenta que precisamos -->
+    <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+
+    <!-- O SEU IMPORTMAP ORIGINAL E CORRETO -->
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://aistudiocdn.com/react@^19.2.0",
+        "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.0/client",
+        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1"
+      }
+    }
+    </script>
+</head>
+<body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
+    <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
+    <div id="root"></div>
+
+    <!-- O SCRIPT DE CARREGAMENTO QUE JÁ ESTÁ FUNCIONANDO BEM -->
+    <script type="module">
+        const blobCache = new Map();
+
+        async function resolveAndTranspile(entryPath) {
+            const absoluteUrl = new URL(entryPath, window.location.href).href;
+            if (blobCache.has(absoluteUrl)) {
+                return blobCache.get(absoluteUrl);
+            }
+
+            const response = await fetch(absoluteUrl);
+            if (!response.ok) throw new Error(`Não foi possível encontrar o arquivo: ${absoluteUrl}`);
+            const sourceCode = await response.text();
+            
+            const importRegex = /import\s+.*?from\s+['"](.*?)['"]/g;
+            const dependencies = new Map();
+            let match;
+            
+            while ((match = importRegex.exec(sourceCode)) !== null) {
+                const depPath = match[1];
+                if (depPath.startsWith('.')) { 
+                    dependencies.set(depPath, null);
+                }
+            }
+
+            const promises = Array.from(dependencies.keys()).map(async (depPath) => {
+                const newPath = new URL(depPath, absoluteUrl).href;
+                const finalPath = await findFileWithExtension(newPath);
+                if (!finalPath) throw new Error(`Dependência não encontrada: ${depPath} em ${absoluteUrl}`);
+                const resolvedUrl = await resolveAndTranspile(finalPath);
+                dependencies.set(depPath, resolvedUrl);
+            });
+
+            await Promise.all(promises);
+
+            let transformedCode = sourceCode;
+            for (const [path, blobUrl] of dependencies.entries()) {
+                if(blobUrl) {
+                    transformedCode = transformedCode.replace(new RegExp(`['"]${path}['"]`, 'g'), `'${blobUrl}'`);
+                }
+            }
+
+            const { code } = Babel.transform(transformedCode, {
+                presets: ['react', 'typescript'],
+                filename: absoluteUrl,
+            });
+
+            const blob = new Blob([code], { type: 'application/javascript' });
+            const blobUrl = URL.createObjectURL(blob);
+            
+            blobCache.set(absoluteUrl, blobUrl);
+            return blobUrl;
+        }
+        
+        async function findFileWithExtension(basePath) {
+            const potentialPaths = [ basePath, `${basePath}.ts`, `${basePath}.tsx`, `${basePath}/index.ts`, `${basePath}/index.tsx` ];
+            for (const path of potentialPaths) {
+                try {
+                    const response = await fetch(path, { method: 'HEAD' });
+                    if (response.ok) return path;
+                } catch(e) {}
+            }
+            return null;
+        }
+
+        try {
+            console.log('Iniciando carregamento da aplicação...');
+            const entryModuleUrl = await resolveAndTranspile('/index.tsx');
+            await import(entryModuleUrl);
+            console.log('Aplicação carregada com sucesso!');
+        } catch (error) {
+            console.error('Falha ao inicializar a aplicação:', error);
+            const rootEl = document.getElementById('root');
+            rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p><pre>${error.stack}</pre></div>`;
+        }
+    </script>
+</body>
 </html>
