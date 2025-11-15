@@ -62,12 +62,13 @@
     <!-- PASSO 1: Incluir o Babel Standalone -->
     <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
 
-    <!-- PASSO 2: Import Map para dependências externas. -->
+    <!-- PASSO 2: Import Map para TODAS as dependências externas. -->
     <script type="importmap">
     {
       "imports": {
         "react": "https://esm.sh/react@18.2.0",
-        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client"
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "@google/genai": "https://esm.sh/@google/generative-ai@0.12.0"
       }
     }
     </script>
@@ -76,117 +77,77 @@
     <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
     <div id="root"></div>
 
-    <!-- PASSO 3: O Script Inteligente (versão correta) -->
+    <!-- PASSO 3: O Script Inteligente (sem alterações, mas o novo importmap o conserta) -->
     <script type="module">
-        // Cache para blobs já processados
         const blobCache = new Map();
 
-        /**
-         * A função mestre: baixa, transpila e resolve toda a árvore de dependências.
-         * @param {string} entryPath - O ponto de entrada da aplicação (ex: '/index.tsx').
-         * @returns {Promise<string>} A URL do Blob do módulo de entrada, pronto para ser importado.
-         */
         async function resolveAndTranspile(entryPath) {
-            // Se o blob já foi criado, retorna a URL do cache.
             const absoluteUrl = new URL(entryPath, window.location.href).href;
             if (blobCache.has(absoluteUrl)) {
                 return blobCache.get(absoluteUrl);
             }
 
-            // 1. BAIXAR O ARQUIVO
             const response = await fetch(absoluteUrl);
             if (!response.ok) throw new Error(`Não foi possível encontrar o arquivo: ${absoluteUrl}`);
             const sourceCode = await response.text();
             
-            // 2. ENCONTRAR E RESOLVER DEPENDÊNCIAS RECURSIVAMENTE
-            // Regex para encontrar todos os `import ... from '...'`
             const importRegex = /import\s+.*?from\s+['"](.*?)['"]/g;
             const dependencies = new Map();
             let match;
             
-            // Encontra todas as dependências do arquivo atual
             while ((match = importRegex.exec(sourceCode)) !== null) {
-                dependencies.set(match[1], null); // ex: './App', 'react'
+                const depPath = match[1];
+                 // Apenas processa dependências relativas. As outras são ignoradas e resolvidas pelo importmap.
+                if (depPath.startsWith('.')) { 
+                    dependencies.set(depPath, null);
+                }
             }
 
-            // Resolve cada dependência em paralelo
             const promises = Array.from(dependencies.keys()).map(async (depPath) => {
-                let resolvedUrl;
-                // Se NÃO for relativo, é uma lib externa (react, etc.) - não fazemos nada.
-                if (!depPath.startsWith('.')) {
-                    resolvedUrl = depPath;
-                } else {
-                    // Se for relativo, inicia o processo de resolução para esse arquivo.
-                    const newPath = new URL(depPath, absoluteUrl).href;
-                    
-                    // Tenta adivinhar a extensão correta (.ts, .tsx, etc.)
-                    const finalPath = await findFileWithExtension(newPath);
-                    if (!finalPath) throw new Error(`Dependência não encontrada: ${depPath} em ${absoluteUrl}`);
-
-                    // Chama a função recursivamente para a dependência
-                    resolvedUrl = await resolveAndTranspile(finalPath);
-                }
+                const newPath = new URL(depPath, absoluteUrl).href;
+                const finalPath = await findFileWithExtension(newPath);
+                if (!finalPath) throw new Error(`Dependência não encontrada: ${depPath} em ${absoluteUrl}`);
+                const resolvedUrl = await resolveAndTranspile(finalPath);
                 dependencies.set(depPath, resolvedUrl);
             });
 
             await Promise.all(promises);
 
-            // 3. REESCREVER O CÓDIGO FONTE
-            // Agora que temos a URL do Blob para cada dependência, substituímos os caminhos originais
             let transformedCode = sourceCode;
             for (const [path, blobUrl] of dependencies.entries()) {
-                if(blobUrl) { // Só substitui se tivermos uma URL de Blob
-                    transformedCode = transformedCode.replace(
-                        new RegExp(`['"]${path}['"]`, 'g'), 
-                        `'${blobUrl}'`
-                    );
+                if(blobUrl) {
+                    transformedCode = transformedCode.replace(new RegExp(`['"]${path}['"]`, 'g'), `'${blobUrl}'`);
                 }
             }
 
-            // 4. TRANSPILAR O CÓDIGO JÁ COM AS DEPENDÊNCIAS RESOLVIDAS
             const { code } = Babel.transform(transformedCode, {
                 presets: ['react', 'typescript'],
                 filename: absoluteUrl,
             });
 
-            // 5. CRIAR O BLOB FINAL NAVEGÁVEL
             const blob = new Blob([code], { type: 'application/javascript' });
             const blobUrl = URL.createObjectURL(blob);
             
-            blobCache.set(absoluteUrl, blobUrl); // Salva no cache
+            blobCache.set(absoluteUrl, blobUrl);
             return blobUrl;
         }
         
-        /**
-         * Função auxiliar para encontrar um arquivo tentando várias extensões.
-         */
         async function findFileWithExtension(basePath) {
-            const potentialPaths = [
-                basePath,
-                `${basePath}.ts`,
-                `${basePath}.tsx`,
-                `${basePath}/index.ts`,
-                `${basePath}/index.tsx`
-            ];
+            const potentialPaths = [ basePath, `${basePath}.ts`, `${basePath}.tsx`, `${basePath}/index.ts`, `${basePath}/index.tsx` ];
             for (const path of potentialPaths) {
                 try {
                     const response = await fetch(path, { method: 'HEAD' });
                     if (response.ok) return path;
                 } catch(e) {}
             }
-            return null; // Retorna null se não encontrar
+            return null;
         }
 
-        // --- PONTO DE ENTRADA DA APLICAÇÃO ---
         try {
             console.log('Iniciando carregamento da aplicação...');
-            // Mira no /index.tsx e inicia todo o processo recursivo.
             const entryModuleUrl = await resolveAndTranspile('/index.tsx');
-
-            // Importa dinamicamente o módulo final, que agora tem todas as suas dependências mapeadas para outros Blobs.
             await import(entryModuleUrl);
             console.log('Aplicação carregada com sucesso!');
-
         } catch (error) {
             console.error('Falha ao inicializar a aplicação:', error);
             const rootEl = document.getElementById('root');
