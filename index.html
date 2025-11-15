@@ -98,8 +98,8 @@
     }
   </script>
 
-  <!-- Sucrase UMD para transpilação rápida (alternativa mais rápida ao Babel) -->
-  <script src="https://cdn.jsdelivr.net/npm/sucrase@3.35.0/dist/umd/sucrase.js"></script>
+  <!-- ALTERADO: Removido o script UMD do Sucrase. Ele será carregado via importmap. -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/sucrase@3.35.0/dist/umd/sucrase.js"></script> -->
 
   <!-- Import map das libs -->
   <script type="importmap">
@@ -108,7 +108,8 @@
     "react": "https://esm.sh/react@18.2.0",
     "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
     "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-    "@google/genai": "https://esm.sh/@google/genai@0.14.0"
+    "@google/genai": "https://esm.sh/@google/genai@0.14.0",
+    "sucrase": "https://esm.sh/sucrase@3.35.0"
   }
 }
 </script>
@@ -139,11 +140,11 @@
   <!-- Preloads e modulepreloads para aceleração (carrega recursos em paralelo cedo) -->
   <link rel="preload" href="/index.tsx" as="fetch" crossorigin="anonymous" />
   <link rel="preload" href="https://cdn.tailwindcss.com" as="script" />
-  <link rel="preload" href="https://cdn.jsdelivr.net/npm/sucrase@3.35.0/dist/umd/sucrase.js" as="script" />
   <link rel="modulepreload" href="https://esm.sh/react@18.2.0" />
   <link rel="modulepreload" href="https://esm.sh/react-dom@18.2.0/client" />
   <link rel="modulepreload" href="https://esm.sh/react@18.2.0/jsx-runtime" />
   <link rel="modulepreload" href="https://esm.sh/@google/genai@0.14.0" />
+  <link rel="modulepreload" href="https://esm.sh/sucrase@3.35.0" /> <!-- ALTERADO: Adicionado preload para o módulo do Sucrase -->
   <link rel="prefetch" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap" as="style" />
 </head>
 <body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
@@ -171,6 +172,9 @@
   <div id="root"></div>
 
   <script type="module">
+    // ALTERADO: Importa a função 'transform' do módulo 'sucrase'
+    import { transform as sucraseTransform } from 'sucrase';
+
     const blobCache = new Map();
 
     async function loadSource(path, parentUrl) {
@@ -210,8 +214,8 @@
       for (const [originalPath, blobUrl] of dependencies.entries()) {
         transformedCode = transformedCode.replace(new RegExp(`(['"])${originalPath}\\1`, 'g'), `$1${blobUrl}$1`);
       }
-      // Transpila com Sucrase (mais rápido que Babel)
-      const { code } = Sucrase.transform(transformedCode, {
+      // ALTERADO: Usa a função importada 'sucraseTransform'
+      const { code } = sucraseTransform(transformedCode, {
         transforms: ['typescript', 'jsx'],
         jsxRuntime: 'automatic',
         jsxImportSource: 'react',
