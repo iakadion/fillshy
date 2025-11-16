@@ -169,62 +169,82 @@
   <div id="root"></div>
 
   <script type="module">
-    // INÍCIO DA SEÇÃO CORRIGIDA
     async function browserResolver() {
-      // Parseia o import map do HTML para que o esbuild possa usá-lo
-      const importMapScript = document.querySelector('script[type="importmap"]');
-      const imports = importMapScript ? JSON.parse(importMapScript.textContent).imports : {};
+      const importMap = {
+        imports: {
+          "react": "https://esm.sh/react@18.2.0",
+          "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+          "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+          "@google/generative-ai": "https://esm.sh/@google/generative-ai@0.14.0"
+        }
+      };
+
+      const extensions = ['.tsx', '.ts', '.jsx', '.js'];
 
       return {
         name: 'browser-resolver',
         setup(build) {
-          // Intercepta todos os pedidos de resolução de módulos
-          build.onResolve({ filter: /.*/ }, args => {
-            // 1. Prioridade máxima: Verifica se o path é um "bare specifier" (ex: "react")
-            // que está definido no nosso import map.
-            const mappedPath = imports[args.path];
-            if (mappedPath) {
-              return { path: mappedPath, namespace: 'http-url' };
-            }
-
-            // 2. Se já for uma URL completa (ex: de um import dentro de outro módulo CDN),
-            // apenas a retorna.
-            if (args.path.startsWith('http')) {
-              return { path: args.path, namespace: 'http-url' };
-            }
-
-            // 3. Se houver um "importer", significa que é um import relativo (ex: import App from './App')
-            // Resolve o caminho relativo à URL do arquivo que o está importando.
-            if (args.importer) {
+          // Handle bare module specifiers using importmap
+          build.onResolve({ filter: /^[^./]/ }, args => {
+            const mapped = importMap.imports[args.path];
+            if (mapped) {
               return {
-                path: new URL(args.path, args.importer).toString(),
+                path: mapped,
                 namespace: 'http-url',
               };
             }
-
-            // 4. Fallback para o ponto de entrada inicial ou caminhos absolutos do site (ex: /index.tsx)
-            return {
-              path: new URL(args.path, window.location.origin).toString(),
-              namespace: 'http-url',
-            };
+            // If not in importmap, let esbuild handle (or error later)
+            return null;
           });
 
-          // A lógica de carregamento (onLoad) permanece a mesma.
-          // Ela busca o conteúdo da URL resolvida acima.
+          // Handle absolute URLs (http/https)
+          build.onResolve({ filter: /^https?:\/\// }, args => ({
+            path: args.path,
+            namespace: 'http-url',
+          }));
+
+          // Handle relative resolves within http-url namespace
+          build.onResolve({ filter: /.*/, namespace: 'http-url' }, args => ({
+            path: new URL(args.path, args.importer).toString(),
+            namespace: 'http-url',
+          }));
+
+          // Handle root-relative paths
+          build.onResolve({ filter: /^\/.*/ }, args => ({
+            path: new URL(args.path, window.location.origin).toString(),
+            namespace: 'http-url',
+          }));
+
+          // Load content, with extension fallback for local files
           build.onLoad({ filter: /.*/, namespace: 'http-url' }, async (args) => {
-            const res = await fetch(args.path, { cache: 'force-cache' });
+            let url = args.path;
+            let res = await fetch(url, { cache: 'force-cache' });
+
+            if (!res.ok) {
+              for (let ext of extensions) {
+                let tryUrl = url + ext;
+                res = await fetch(tryUrl, { cache: 'force-cache' });
+                if (res.ok) {
+                  url = tryUrl;
+                  break;
+                }
+              }
+            }
+
             if (!res.ok) throw new Error(`Falha ao carregar ${args.path}`);
+
             const contents = await res.text();
+            const ext = url.split('.').pop().toLowerCase();
             let loader = 'js';
-            if (args.path.endsWith('.tsx')) loader = 'tsx';
-            else if (args.path.endsWith('.ts')) loader = 'ts';
-            else if (args.path.endsWith('.jsx')) loader = 'jsx';
+            if (ext === 'tsx') loader = 'tsx';
+            else if (ext === 'ts') loader = 'ts';
+            else if (ext === 'jsx') loader = 'jsx';
+
             return { contents, loader };
           });
         }
       };
     }
-    // FIM DA SEÇÃO CORRIGIDA
 
     (async () => {
       const rootEl = document.getElementById('root');
@@ -256,7 +276,7 @@
         await import(blobUrl);
       } catch (error) {
         console.error('Falha ao inicializar a aplicação:', error);
-        rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p><pre>${error.stack || ''}</pre></div>`;
+        rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p></div>`;
       } finally {
         document.getElementById('loading').remove();
         document.body.style.transition = 'opacity 0.2s ease-in-out';
