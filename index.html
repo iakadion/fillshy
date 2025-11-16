@@ -173,7 +173,7 @@
     async function browserResolver() {
       const importMapScript = document.querySelector('script[type="importmap"]');
       const imports = importMapScript ? JSON.parse(importMapScript.textContent).imports : {};
-      const resolveCache = new Map();
+      const resolveCache = new Map(); // Cache para evitar checagens de rede repetidas
 
       return {
         name: 'browser-resolver',
@@ -185,49 +185,47 @@
               return resolveCache.get(cacheKey);
             }
 
-            // --- Lógica de Resolução Refatorada ---
-
-            // CASO 1: É um "bare module specifier" (ex: "react", "@google/generative-ai")
-            // Não começa com '.', '/' ou 'http'. Deve estar no import map.
-            if (!/^(https?:\/\/|\.\/|\.\.\/|\/)/.test(args.path)) {
-              if (imports[args.path]) {
-                const result = { path: imports[args.path], namespace: 'http-url' };
-                resolveCache.set(cacheKey, result);
-                return result;
-              }
-              // Se não está no import map, é um erro. Deixa o esbuild falhar.
-              // A URL construída será inválida e o onLoad falhará com uma mensagem clara.
+            // 1. Resolve a partir do importmap (ex: "react")
+            if (imports[args.path]) {
+              return { path: imports[args.path], namespace: 'http-url' };
             }
-            
-            // CASO 2: É um caminho absoluto, relativo ou uma URL completa.
-            // Constrói a URL base para o arquivo.
+
+            // 2. Resolve URLs absolutas que já são completas
+            if (args.path.startsWith('http')) {
+              return { path: args.path, namespace: 'http-url' };
+            }
+
+            // 3. Resolve caminhos relativos ou absolutos do site (ex: './App' ou '/index.tsx')
+            // Esta é a parte crucial para corrigir o erro.
             const baseUrl = new URL(args.path, args.importer || window.location.href).href;
 
-            // Se já tiver uma extensão, usa diretamente.
+            // Se o caminho já tem uma extensão, não precisa adivinhar.
             if (/\.\w+$/.test(baseUrl)) {
                  const result = { path: baseUrl, namespace: 'http-url' };
                  resolveCache.set(cacheKey, result);
                  return result;
             }
 
-            // Se não tiver extensão (ex: './App'), tenta adivinhar.
+            // Tenta adivinhar a extensão do arquivo fazendo requisições HEAD
             const potentialExtensions = ['.tsx', '.ts', '.jsx', '.js'];
             for (const ext of potentialExtensions) {
               const testPath = baseUrl + ext;
               try {
+                // Usamos 'HEAD' para ser mais rápido, só checamos se o arquivo existe.
                 const response = await fetch(testPath, { method: 'HEAD', cache: 'force-cache' });
                 if (response.ok) {
                   const result = { path: testPath, namespace: 'http-url' };
-                  resolveCache.set(cacheKey, result);
+                  resolveCache.set(cacheKey, result); // Armazena no cache o resultado positivo
                   return result;
                 }
-              } catch (e) { /* Ignora erros e continua */ }
+              } catch (e) {
+                // Ignora erros de fetch (ex: CORS, falha de rede) e continua tentando
+              }
             }
             
-            // Se nada funcionou, retorna a URL original e deixa o onLoad falhar.
+            // Se nenhuma extensão funcionou, retorna a URL original para que o onLoad possa falhar com uma mensagem clara.
             return { path: baseUrl, namespace: 'http-url' };
           });
-
 
           // Hook para carregar o conteúdo do caminho resolvido (sem alterações)
           build.onLoad({ filter: /.*/, namespace: 'http-url' }, async (args) => {
