@@ -105,7 +105,7 @@
     "react": "https://esm.sh/react@18.2.0",
     "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
     "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-    "@google/generative-ai": "https://esm.sh/@google/generative-ai@0.14.0"
+    "@google/generative-ai": "https://esm.sh/@google/genai@0.14.0"
   }
 }
 </script>
@@ -169,25 +169,48 @@
   <div id="root"></div>
 
   <script type="module">
+    // INÍCIO DA SEÇÃO CORRIGIDA
     async function browserResolver() {
+      // Parseia o import map do HTML para que o esbuild possa usá-lo
+      const importMapScript = document.querySelector('script[type="importmap"]');
+      const imports = importMapScript ? JSON.parse(importMapScript.textContent).imports : {};
+
       return {
         name: 'browser-resolver',
         setup(build) {
-          build.onResolve({ filter: /^https?:\/\// }, args => ({
-            path: args.path,
-            namespace: 'http-url',
-          }));
+          // Intercepta todos os pedidos de resolução de módulos
+          build.onResolve({ filter: /.*/ }, args => {
+            // 1. Prioridade máxima: Verifica se o path é um "bare specifier" (ex: "react")
+            // que está definido no nosso import map.
+            const mappedPath = imports[args.path];
+            if (mappedPath) {
+              return { path: mappedPath, namespace: 'http-url' };
+            }
 
-          build.onResolve({ filter: /.*/, namespace: 'http-url' }, args => ({
-            path: new URL(args.path, args.importer).toString(),
-            namespace: 'http-url',
-          }));
+            // 2. Se já for uma URL completa (ex: de um import dentro de outro módulo CDN),
+            // apenas a retorna.
+            if (args.path.startsWith('http')) {
+              return { path: args.path, namespace: 'http-url' };
+            }
 
-          build.onResolve({ filter: /^\/.*/ }, args => ({
-            path: new URL(args.path, window.location.origin).toString(),
-            namespace: 'http-url',
-          }));
+            // 3. Se houver um "importer", significa que é um import relativo (ex: import App from './App')
+            // Resolve o caminho relativo à URL do arquivo que o está importando.
+            if (args.importer) {
+              return {
+                path: new URL(args.path, args.importer).toString(),
+                namespace: 'http-url',
+              };
+            }
 
+            // 4. Fallback para o ponto de entrada inicial ou caminhos absolutos do site (ex: /index.tsx)
+            return {
+              path: new URL(args.path, window.location.origin).toString(),
+              namespace: 'http-url',
+            };
+          });
+
+          // A lógica de carregamento (onLoad) permanece a mesma.
+          // Ela busca o conteúdo da URL resolvida acima.
           build.onLoad({ filter: /.*/, namespace: 'http-url' }, async (args) => {
             const res = await fetch(args.path, { cache: 'force-cache' });
             if (!res.ok) throw new Error(`Falha ao carregar ${args.path}`);
@@ -201,6 +224,7 @@
         }
       };
     }
+    // FIM DA SEÇÃO CORRIGIDA
 
     (async () => {
       const rootEl = document.getElementById('root');
@@ -232,7 +256,7 @@
         await import(blobUrl);
       } catch (error) {
         console.error('Falha ao inicializar a aplicação:', error);
-        rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p></div>`;
+        rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p><pre>${error.stack || ''}</pre></div>`;
       } finally {
         document.getElementById('loading').remove();
         document.body.style.transition = 'opacity 0.2s ease-in-out';
