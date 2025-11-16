@@ -98,14 +98,15 @@
     }
   </script>
 
-  <!-- Import map das libs -->
+  <!-- Import map das libs (corrigido nome do pacote Google Generative AI) -->
   <script type="importmap">
 {
   "imports": {
     "react": "https://aistudiocdn.com/react@^19.2.0",
     "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.0/client",
     "react/jsx-runtime": "https://aistudiocdn.com/react@^19.2.0/jsx-runtime",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1"
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1",
+    "esbuild-wasm": "https://unpkg.com/esbuild-wasm@0.23.1"
   }
 }
 </script>
@@ -136,8 +137,8 @@
   <!-- Preloads e modulepreloads para aceleração (carrega recursos em paralelo cedo) -->
   <link rel="preload" href="/index.tsx" as="fetch" crossorigin="anonymous" />
   <link rel="preload" href="https://cdn.tailwindcss.com" as="script" />
-  <link rel="modulepreload" href="https://esm.sh/esbuild-wasm@0.23.1" />
-  <link rel="preload" href="https://esm.sh/esbuild-wasm@0.23.1/esbuild.wasm" as="fetch" crossorigin="anonymous" />
+  <link rel="modulepreload" href="https://unpkg.com/esbuild-wasm@0.23.1" />
+  <link rel="preload" href="https://unpkg.com/esbuild-wasm@0.23.1/esbuild.wasm" as="fetch" crossorigin="anonymous" />
   <link rel="modulepreload" href="https://esm.sh/react@18.2.0" />
   <link rel="modulepreload" href="https://esm.sh/react-dom@18.2.0/client" />
   <link rel="modulepreload" href="https://esm.sh/react@18.2.0/jsx-runtime" />
@@ -169,115 +170,127 @@
   <div id="root"></div>
 
   <script type="module">
-    async function browserResolver() {
-      const importMap = {
-        imports: {
-          "react": "https://esm.sh/react@18.2.0",
-          "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-          "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-          "@google/generative-ai": "https://esm.sh/@google/generative-ai@0.14.0"
-        }
-      };
+    import * as esbuild from 'esbuild-wasm';
 
-      const extensions = ['.tsx', '.ts', '.jsx', '.js'];
+    const DB_NAME = 'AppCache';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'blobs';
 
-      return {
-        name: 'browser-resolver',
-        setup(build) {
-          // Handle bare module specifiers using importmap
-          build.onResolve({ filter: /^[^./]/ }, args => {
-            const mapped = importMap.imports[args.path];
-            if (mapped) {
-              return {
-                path: mapped,
-                namespace: 'http-url',
-              };
-            }
-            // If not in importmap, let esbuild handle (or error later)
-            return null;
-          });
+    async function openDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onerror = reject;
+        request.onsuccess = () => resolve(request.result);
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          db.createObjectStore(STORE_NAME, { keyPath: 'url' });
+        };
+      });
+    }
 
-          // Handle absolute URLs (http/https)
-          build.onResolve({ filter: /^https?:\/\// }, args => ({
-            path: args.path,
-            namespace: 'http-url',
-          }));
+    async function getCachedBlobUrl(db, absoluteUrl) {
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, 'readonly');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.get(absoluteUrl);
+        request.onsuccess = () => resolve(request.result ? request.result.blobUrl : null);
+        request.onerror = reject;
+      });
+    }
 
-          // Handle relative resolves within http-url namespace
-          build.onResolve({ filter: /.*/, namespace: 'http-url' }, args => ({
-            path: new URL(args.path, args.importer).toString(),
-            namespace: 'http-url',
-          }));
+    async function cacheBlobUrl(db, absoluteUrl, blobUrl) {
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.put({ url: absoluteUrl, blobUrl });
+        request.onsuccess = resolve;
+        request.onerror = reject;
+      });
+    }
 
-          // Handle root-relative paths
-          build.onResolve({ filter: /^\/.*/ }, args => ({
-            path: new URL(args.path, window.location.origin).toString(),
-            namespace: 'http-url',
-          }));
+    const blobCache = new Map();
 
-          // Load content, with extension fallback for local files
-          build.onLoad({ filter: /.*/, namespace: 'http-url' }, async (args) => {
-            let url = args.path;
-            let res = await fetch(url, { cache: 'force-cache' });
+    async function loadSource(path, parentUrl) {
+      const baseUrl = new URL(path, parentUrl).href;
+      if (/\.(tsx?|jsx?)($|\?)/.test(baseUrl)) {
+        const res = await fetch(baseUrl, { cache: 'force-cache' });
+        if (!res.ok) throw new Error('Não foi possível carregar ' + baseUrl);
+        return { absoluteUrl: baseUrl, sourceCode: await res.text() };
+      }
+      const base = baseUrl.replace(/\/$/, '');
+      const candidates = [ base + '.tsx', base + '.ts', base + '/index.tsx', base + '/index.ts' ];
+      for (const url of candidates) {
+        try {
+          const res = await fetch(url, { cache: 'force-cache' });
+          if (res.ok) return { absoluteUrl: url, sourceCode: await res.text() };
+        } catch (_) {}
+      }
+      throw new Error('Não foi possível encontrar o arquivo para ' + baseUrl);
+    }
 
-            if (!res.ok) {
-              for (let ext of extensions) {
-                let tryUrl = url + ext;
-                res = await fetch(tryUrl, { cache: 'force-cache' });
-                if (res.ok) {
-                  url = tryUrl;
-                  break;
-                }
-              }
-            }
+    async function resolveAndTranspile(entryPath, parentUrl = window.location.href, db) {
+      const { absoluteUrl, sourceCode } = await loadSource(entryPath, parentUrl);
+      if (blobCache.has(absoluteUrl)) return blobCache.get(absoluteUrl);
 
-            if (!res.ok) throw new Error(`Falha ao carregar ${args.path}`);
+      const cachedBlob = await getCachedBlobUrl(db, absoluteUrl);
+      if (cachedBlob) {
+        blobCache.set(absoluteUrl, cachedBlob);
+        return cachedBlob;
+      }
 
-            const contents = await res.text();
-            const ext = url.split('.').pop().toLowerCase();
-            let loader = 'js';
-            if (ext === 'tsx') loader = 'tsx';
-            else if (ext === 'ts') loader = 'ts';
-            else if (ext === 'jsx') loader = 'jsx';
-
-            return { contents, loader };
-          });
-        }
-      };
+      const importRegex = /\bimport\s+[^'"]*['"](.*?)['"]/g;
+      const dependencies = new Map();
+      let match;
+      while ((match = importRegex.exec(sourceCode)) !== null) {
+        if (match[1].startsWith('.')) dependencies.set(match[1], null);
+      }
+      await Promise.all(
+        Array.from(dependencies.keys()).map(async (depPath) => {
+          const childBlobUrl = await resolveAndTranspile(depPath, absoluteUrl, db);
+          dependencies.set(depPath, childBlobUrl);
+        })
+      );
+      let transformedCode = sourceCode;
+      for (const [originalPath, blobUrl] of dependencies.entries()) {
+        transformedCode = transformedCode.replace(new RegExp(`(['"])${originalPath}\\1`, 'g'), `$1${blobUrl}$1`);
+      }
+      const loader = absoluteUrl.endsWith('.tsx') || absoluteUrl.endsWith('.jsx') ? 'tsx' : 'ts';
+      const result = await esbuild.transform(transformedCode, {
+        loader: loader,
+        jsx: 'automatic',
+        jsxImportSource: 'react',
+        target: 'es2020',
+        format: 'esm',
+        sourcemap: false,
+        minify: true,
+        treeShaking: true
+      });
+      const code = result.code;
+      const blobUrl = URL.createObjectURL(new Blob([code], { type: 'application/javascript' }));
+      blobCache.set(absoluteUrl, blobUrl);
+      await cacheBlobUrl(db, absoluteUrl, blobUrl);
+      return blobUrl;
     }
 
     (async () => {
       const rootEl = document.getElementById('root');
+      let db;
       try {
-        const esbuildModule = await import('https://esm.sh/esbuild-wasm@0.23.1');
-        const esbuild = esbuildModule.default || esbuildModule;
-
+        db = await openDB();
+        const wasmURL = 'https://unpkg.com/esbuild-wasm@0.23.1/esbuild.wasm';
+        const response = await fetch(wasmURL, { cache: 'force-cache' });
+        const wasmModule = await WebAssembly.compileStreaming(response);
         await esbuild.initialize({
-          wasmURL: 'https://esm.sh/esbuild-wasm@0.23.1/esbuild.wasm'
+          wasmModule,
+          worker: true
         });
-
-        const result = await esbuild.build({
-          entryPoints: [new URL('/index.tsx', window.location.origin).toString()],
-          bundle: true,
-          write: false,
-          format: 'esm',
-          minify: true,
-          sourcemap: false,
-          target: 'es2020',
-          jsx: 'automatic',
-          jsxImportSource: 'react',
-          plugins: [await browserResolver()],
-        });
-
-        if (result.outputFiles.length === 0) throw new Error('Nenhum arquivo de saída gerado');
-
-        const code = result.outputFiles[0].text;
-        const blobUrl = URL.createObjectURL(new Blob([code], { type: 'application/javascript' }));
-        await import(blobUrl);
+        const entryModuleUrl = await resolveAndTranspile('/index.tsx', window.location.href, db);
+        await import(entryModuleUrl);
       } catch (error) {
         console.error('Falha ao inicializar a aplicação:', error);
         rootEl.innerHTML = `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;"><h2>Erro na Aplicação</h2><p>${error.message}</p></div>`;
       } finally {
+        if (db) db.close();
         document.getElementById('loading').remove();
         document.body.style.transition = 'opacity 0.2s ease-in-out';
         document.body.style.visibility = 'visible';
