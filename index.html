@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Nyx Profile</title>
 
-  <!-- Google Fonts -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
 
-  <!-- Tailwind CSS -->
+  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -33,7 +33,6 @@
     }
   </script>
 
-  <!-- CSS Globais e Fontes Customizadas -->
   <style>
     @font-face {
       font-family: 'Robowapix';
@@ -47,57 +46,59 @@
       padding: 0;
       width: 100%;
       height: 100%;
-      overflow: hidden; /* Critical for game-like feel */
+      overflow: hidden;
       background-color: #050000;
       color: white;
       -webkit-tap-highlight-color: transparent;
     }
-    
     * {
       box-sizing: border-box;
-      cursor: none; /* Hide default cursor for custom one */
+      cursor: none;
     }
-    
-    /* Disable selection */
     .no-select {
       user-select: none;
       -webkit-user-select: none;
     }
-    
-    ::-webkit-scrollbar { width: 0px; } 
+    html { overflow-y: auto; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #050000; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 0px; }
+    ::-webkit-scrollbar-thumb:hover { background: #ff1111; }
   </style>
 
   <!-- Babel Standalone -->
   <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
 
-  <!-- Import Map (Atualizado para ESM.SH que funciona em browser sem build) -->
+  <!-- Import map das libs - CORRIGIDO -->
   <script type="importmap">
-  {
-    "imports": {
-      "react": "https://esm.sh/react@18.2.0",
-      "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-      "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-      "lucide-react": "https://esm.sh/lucide-react@0.454.0?external=react"
-    }
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "lucide-react": "https://esm.sh/lucide-react@0.454.0?external=react",
+    "@google/genai": "https://esm.sh/@google/generative-ai@0.21.0",
+    "@google/generative-ai": "https://esm.sh/@google/generative-ai@0.21.0"
   }
-  </script>
+}
+</script>
 
   <!-- Pré-carrega o entry -->
   <link rel="preload" href="/index.tsx" as="fetch" crossorigin="anonymous" />
+  <link rel="stylesheet" href="/index.css">
 </head>
 
 <body class="bg-nyx-black text-white font-rajdhani">
   <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
   <div id="root"></div>
 
-  <!-- SCRIPT COMPILADOR (O segredo do funcionamento) -->
   <script type="module">
-    // Polyfill para process.env (Muitas libs esperam isso)
+    // Polyfill para process.env
     globalThis.process = globalThis.process || { env: { NODE_ENV: 'production' } };
 
     const blobCache = new Map();
 
-    // 1. Carrega o arquivo TS/TSX
+    // Carrega o arquivo TS/TSX, tentando extensões padrão (.tsx, .ts, /index.tsx, /index.ts)
     async function loadSource(path, parentUrl) {
       const baseUrl = new URL(path, parentUrl).href;
 
@@ -108,7 +109,6 @@
         return { absoluteUrl: baseUrl, sourceCode: await res.text() };
       }
 
-      // Tenta variações de extensão
       const base = baseUrl.replace(/\/$/, '');
       const candidates = [
         base + '.tsx',
@@ -124,24 +124,23 @@
             return { absoluteUrl: url, sourceCode: await res.text() };
           }
         } catch (_) {
-          // ignora
+          // ignora, tenta o próximo
         }
       }
 
       throw new Error('Não foi possível encontrar o arquivo para ' + baseUrl);
     }
 
-    // 2. Resolve dependências, transpila e cria Blobs
     async function resolveAndTranspile(entryPath, parentUrl = window.location.href) {
-      // Lê o código fonte
+      // 1) Descobre o arquivo real (.tsx/.ts) e lê o código-fonte
       const { absoluteUrl, sourceCode } = await loadSource(entryPath, parentUrl);
 
-      // Cache para não carregar o mesmo arquivo 2x
+      // Cache por arquivo real (URL com extensão)
       if (blobCache.has(absoluteUrl)) {
         return blobCache.get(absoluteUrl);
       }
 
-      // Descobre imports relativos (começados com .)
+      // 2) Descobre imports relativos (somente "import ... from '...';")
       const importRegex = /\bimport\s+[^'"]*['"](.*?)['"]/g;
       const dependencies = new Map();
       let match;
@@ -152,7 +151,7 @@
         }
       }
 
-      // Resolve dependências recursivamente
+      // 3) Resolve recursivamente as dependências em paralelo
       await Promise.all(
         Array.from(dependencies.keys()).map(async (depPath) => {
           const childBlobUrl = await resolveAndTranspile(depPath, absoluteUrl);
@@ -160,7 +159,7 @@
         })
       );
 
-      // Reescreve os caminhos dos imports para os Blobs gerados
+      // 4) Reescreve os imports locais para apontar para os blobs
       let transformedCode = sourceCode;
       for (const [originalPath, blobUrl] of dependencies.entries()) {
         const escapedPath = originalPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -168,7 +167,10 @@
         transformedCode = transformedCode.replace(re, `$1${blobUrl}$1`);
       }
 
-      // Babel Transform (TSX -> JS)
+      // 5) PATCH: Corrige GoogleGenAI -> GoogleGenerativeAI
+      transformedCode = transformedCode.replace(/\bGoogleGenAI\b/g, 'GoogleGenerativeAI');
+
+      // 6) Transpila TSX -> JS com Babel (React + TypeScript)
       const { code } = Babel.transform(transformedCode, {
         presets: [
           ['react', { runtime: 'automatic' }],
@@ -178,7 +180,7 @@
         filename: absoluteUrl
       });
 
-      // Cria Blob URL
+      // 7) Cria um Blob URL para esse módulo e guarda em cache
       const blobUrl = URL.createObjectURL(
         new Blob([code], { type: 'application/javascript' })
       );
@@ -187,17 +189,17 @@
       return blobUrl;
     }
 
-    // Inicialização
     (async () => {
       try {
+        // Entrada da app: ajuste aqui se seu entry não for /index.tsx
         const entryModuleUrl = await resolveAndTranspile('/index.tsx');
         await import(entryModuleUrl);
       } catch (error) {
         console.error('Falha ao inicializar a aplicação:', error);
         const rootEl = document.getElementById('root');
         rootEl.innerHTML =
-          `<div style="color:#ff1111; background:#050000; padding:20px; font-family:monospace; margin: 20px; border: 1px solid #ff1111;">
-             <h2 style="font-family:'Orbitron', sans-serif">SYSTEM ERROR</h2>
+          `<div style="color:#ff6b6b; background:#1a0000; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap; margin: 20px; border: 1px solid #ff1111;">
+             <h2 style="color:#ff1111;">⚠ Erro na Aplicação</h2>
              <p>${error.message}</p>
            </div>`;
       }
