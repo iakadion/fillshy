@@ -2,15 +2,34 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AllFines | Premium Audio</title>
+  <meta name="theme-color" content="#0B071A" />
+
+  <!-- SEO -->
+  <title>fillshy - Autonomous AI Content Pipeline</title>
+  <meta name="description"
+        content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
+  <link rel="canonical" href="./" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="./" />
+  <meta property="og:title" content="fillshy - Autonomous AI Content Pipeline" />
+  <meta property="og:description"
+        content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="./" />
+  <meta property="twitter:title" content="fillshy - Autonomous AI Content Pipeline" />
+  <meta property="twitter:description"
+        content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap"
+    rel="stylesheet">
 
-  <!-- Tailwind -->
+  <!-- Tailwind CDN (como você já usava) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -18,69 +37,87 @@
         extend: {
           fontFamily: {
             sans: ['Inter', 'sans-serif'],
-            display: ['Space Grotesk', 'sans-serif'],
-          },
-          colors: {
-            agency: {
-              yellow: '#FFD700',
-              black: '#0a0a0a',
-              dark: '#020617',
-              slate: '#1e293b',
-            }
-          },
-          animation: {
-            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-            'fade-in': 'fadeIn 0.5s ease-out forwards',
+            heading: ['Sora', 'sans-serif'],
           },
           keyframes: {
-            fadeIn: {
-              '0%': { opacity: '0', transform: 'translateY(10px)' },
-              '100%': { opacity: '1', transform: 'translateY(0)' },
-            }
+            'reveal-word': {
+              from: { opacity: '0', transform: 'translateY(10px)' },
+              to:   { opacity: '1', transform: 'translateY(0)' },
+            },
+            'letter-reveal': {
+              '0%':   { opacity: 0, transform: 'translateY(20px) scale(0.8)' },
+              '100%': { opacity: 1, transform: 'translateY(0) scale(1)' },
+            },
+            'logo-bar-1': {
+              '0%':   { transform: 'translateY(-40px)', opacity: 0 },
+              '100%': { transform: 'translateY(0)', opacity: 1 },
+            },
+            'logo-bar-2': {
+              '0%':   { transform: 'translateY(40px)', opacity: 0 },
+              '100%': { transform: 'translateY(0)', opacity: 1 },
+            },
+            'blob-animation': {
+              '0%':   { transform: 'translate(0px, 0px) scale(1)' },
+              '33%':  { transform: 'translate(30px, -50px) scale(1.1)' },
+              '66%':  { transform: 'translate(-20px, 20px) scale(0.9)' },
+              '100%': { transform: 'translate(0px, 0px) scale(1)' },
+            },
+            'fade-in': {
+              from: { opacity: 0 },
+              to:   { opacity: 1 },
+            },
+          },
+          animation: {
+            'reveal-word': 'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+            'letter-reveal': 'letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+            'logo-bar-1': 'logo-bar-1 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+            'logo-bar-2': 'logo-bar-2 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
+            'blob': 'blob-animation 20s infinite ease-in-out',
+            'fade-in': 'fade-in 0.3s ease-in-out',
           }
         }
-      }
+      },
+      plugins: [
+        function ({ addUtilities }) {
+          addUtilities({
+            '.scrollbar-hide': {
+              '-ms-overflow-style': 'none',
+              'scrollbar-width': 'none',
+              '&::-webkit-scrollbar': { display: 'none' }
+            }
+          })
+        }
+      ]
     }
   </script>
-
-  <style>
-    html { overflow-y: auto; }
-    body { background-color: #020617; color: white; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #020617; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 0px; }
-    ::-webkit-scrollbar-thumb:hover { background: #FFD700; }
-  </style>
 
   <!-- Babel Standalone -->
   <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
 
-  <!-- Import map das libs - CORRIGIDO -->
+  <!-- Import map das libs -->
   <script type="importmap">
 {
   "imports": {
     "react": "https://esm.sh/react@18.2.0",
     "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
     "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-    "lucide-react": "https://esm.sh/lucide-react@0.454.0?external=react",
-    "@google/genai": "https://esm.sh/@google/generative-ai@0.21.0",
-    "@google/generative-ai": "https://esm.sh/@google/generative-ai@0.21.0"
+    "@google/genai": "https://esm.sh/@google/genai@0.14.0"
   }
 }
 </script>
 
-  <!-- Pré-carrega o entry -->
+  <style>
+    html { overflow-y: auto; }
+  </style>
+
+  <!-- Pré-carrega o entry (ajuda um pouco no tempo total) -->
   <link rel="preload" href="/index.tsx" as="fetch" crossorigin="anonymous" />
 </head>
-
-<body class="bg-agency-dark text-white font-sans">
+<body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
   <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
   <div id="root"></div>
 
   <script type="module">
-    // Polyfill para process.env
-    globalThis.process = globalThis.process || { env: { NODE_ENV: 'production' } };
-
     const blobCache = new Map();
 
     // Carrega o arquivo TS/TSX, tentando extensões padrão (.tsx, .ts, /index.tsx, /index.ts)
@@ -147,15 +184,11 @@
       // 4) Reescreve os imports locais para apontar para os blobs
       let transformedCode = sourceCode;
       for (const [originalPath, blobUrl] of dependencies.entries()) {
-        const escapedPath = originalPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const re = new RegExp(`(['"])${escapedPath}\\1`, 'g');
+        const re = new RegExp(`(['"])${originalPath}\\1`, 'g');
         transformedCode = transformedCode.replace(re, `$1${blobUrl}$1`);
       }
 
-      // 5) PATCH: Corrige GoogleGenAI -> GoogleGenerativeAI
-      transformedCode = transformedCode.replace(/\bGoogleGenAI\b/g, 'GoogleGenerativeAI');
-
-      // 6) Transpila TSX -> JS com Babel (React + TypeScript)
+      // 5) Transpila TSX -> JS com Babel (React + TypeScript)
       const { code } = Babel.transform(transformedCode, {
         presets: [
           ['react', { runtime: 'automatic' }],
@@ -165,7 +198,7 @@
         filename: absoluteUrl
       });
 
-      // 7) Cria um Blob URL para esse módulo e guarda em cache
+      // 6) Cria um Blob URL para esse módulo e guarda em cache
       const blobUrl = URL.createObjectURL(
         new Blob([code], { type: 'application/javascript' })
       );
@@ -183,7 +216,7 @@
         console.error('Falha ao inicializar a aplicação:', error);
         const rootEl = document.getElementById('root');
         rootEl.innerHTML =
-          `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap; margin: 20px;">
+          `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;">
              <h2>Erro na Aplicação</h2>
              <p>${error.message}</p>
            </div>`;
