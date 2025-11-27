@@ -1,52 +1,14 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Nyx Profile</title>
 
-  <!-- Fonts Google -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
-
-  <!-- Fonte Robowapix -->
-  <style>
-    @font-face {
-      font-family: 'Robowapix';
-      src: url('https://files.catbox.moe/wkl0bh.otf') format('opentype');
-      font-weight: normal;
-      font-style: normal;
-    }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background-color: #050000;
-      color: white;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    * {
-      box-sizing: border-box;
-      cursor: none !important;
-    }
-
-    .no-select {
-      user-select: none;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-    }
-
-    /* Esconde scrollbar mas mantém funcionalidade */
-    html { overflow: hidden; }
-    body { overflow: hidden; scrollbar-width: none; -ms-overflow-style: none; }
-    body::-webkit-scrollbar { display: none; }
-  </style>
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -55,35 +17,61 @@
       theme: {
         extend: {
           fontFamily: {
-            robowapix: ['Robowapix', 'sans-serif'],
-            orbitron: ['Orbitron', 'sans-serif'],
-            rajdhani: ['Rajdhani', 'sans-serif'],
+            'robowapix': ['Robowapix', 'sans-serif'],
+            'orbitron': ['Orbitron', 'sans-serif'],
+            'rajdhani': ['Rajdhani', 'sans-serif'],
           },
           colors: {
             'nyx-red': '#ff1111',
             'nyx-black': '#050000',
-            'nyx-dark': '#0f0000',
           },
           animation: {
             'spin-slow': 'spin 10s linear infinite',
-            'pulse-red': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-            'glow': 'glow 1.5s ease-in-out infinite alternate',
-          },
-          keyframes: {
-            glow: {
-              '0%': { textShadow: '0 0 20px #ff1111' },
-              '100%': { textShadow: '0 0 40px #ff1111, 0 0 60px #ff1111' },
-            }
           }
         }
       }
     }
   </script>
 
-  <!-- Babel Standalone (obrigatório pro TSX funcionar no navegador) -->
+  <!-- Custom CSS -->
+  <style>
+    @font-face {
+      font-family: 'Robowapix';
+      src: url('https://files.catbox.moe/wkl0bh.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden; /* Critical for game-like feel */
+      background-color: #050000;
+      color: white;
+      -webkit-tap-highlight-color: transparent;
+    }
+    * {
+      box-sizing: border-box;
+      cursor: none; /* Hide default cursor for custom one */
+    }
+    /* Disable selection */
+    .no-select {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    
+    /* Scrollbar override just in case */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #050000; }
+    ::-webkit-scrollbar-thumb { background: #ff1111; }
+  </style>
+
+  <!-- Babel Standalone (Necessário para compilar JSX/TSX no navegador) -->
   <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
 
-  <!-- Import map OFICIAL (o mesmo dos seus projetos que funcionam) -->
+  <!-- Import map corrigido para ESM nativo -->
   <script type="importmap">
   {
     "imports": {
@@ -95,29 +83,32 @@
   }
   </script>
 
-  <!-- Pré-carrega o entry (melhora performance) -->
+  <!-- Pré-carrega o entry point -->
   <link rel="preload" href="/index.tsx" as="fetch" crossorigin="anonymous" />
 </head>
 
-<body class="bg-nyx-black text-white font-rajdhani overflow-hidden">
-  <noscript>Ative o JavaScript para acessar o Nyx Profile.</noscript>
+<body>
   <div id="root"></div>
 
-  <!-- COMPILADOR IDÊNTICO AOS SEUS PROJETOS QUE FUNCIONAM -->
+  <!-- Script Lógico: Carrega TSX, resolve imports e roda o React -->
   <script type="module">
+    // Polyfill para process.env (algumas libs precisam)
     globalThis.process = globalThis.process || { env: { NODE_ENV: 'production' } };
 
     const blobCache = new Map();
 
+    // Carrega o arquivo TS/TSX, tentando extensões padrão (.tsx, .ts, /index.tsx, /index.ts)
     async function loadSource(path, parentUrl) {
       const baseUrl = new URL(path, parentUrl).href;
 
+      // Se já tem extensão de arquivo code, tenta direto
       if (/\.(tsx?|jsx?)($|\?)/.test(baseUrl)) {
         const res = await fetch(baseUrl);
-        if (!res.ok) throw new Error('Não encontrado: ' + baseUrl);
+        if (!res.ok) throw new Error('Não foi possível carregar ' + baseUrl);
         return { absoluteUrl: baseUrl, sourceCode: await res.text() };
       }
 
+      // Tenta adivinhar a extensão
       const base = baseUrl.replace(/\/$/, '');
       const candidates = [
         base + '.tsx',
@@ -127,30 +118,40 @@
       ];
 
       for (const url of candidates) {
-        const res = await fetch(url);
-        if (res.ok) {
-          return { absoluteUrl: url, sourceCode: await res.text() };
+        try {
+          const res = await fetch(url);
+          if (res.ok) {
+            return { absoluteUrl: url, sourceCode: await res.text() };
+          }
+        } catch (_) {
+          // ignora, tenta o próximo
         }
       }
 
-      throw new Error('Arquivo não encontrado: ' + baseUrl);
+      throw new Error('Não foi possível encontrar o arquivo para ' + baseUrl);
     }
 
-    async function resolveAndTranspile(entryPath, parentUrl = location.href) {
+    async function resolveAndTranspile(entryPath, parentUrl = window.location.href) {
+      // 1) Descobre o arquivo real (.tsx/.ts) e lê o código-fonte
       const { absoluteUrl, sourceCode } = await loadSource(entryPath, parentUrl);
 
-      if (blobCache.has(absoluteUrl)) return blobCache.get(absoluteUrl);
+      // Cache para não baixar/compilar o mesmo arquivo duas vezes
+      if (blobCache.has(absoluteUrl)) {
+        return blobCache.get(absoluteUrl);
+      }
 
+      // 2) Descobre imports relativos (somente "import ... from './...';")
       const importRegex = /\bimport\s+[^'"]*['"](.*?)['"]/g;
       const dependencies = new Map();
       let match;
       while ((match = importRegex.exec(sourceCode)) !== null) {
         const depPath = match[1];
-        if (depPath.startsWith('.')) {
+        if (depPath.startsWith('.')) { // Apenas imports locais (./ ou ../)
           dependencies.set(depPath, null);
         }
       }
 
+      // 3) Resolve recursivamente as dependências em paralelo
       await Promise.all(
         Array.from(dependencies.keys()).map(async (depPath) => {
           const childBlobUrl = await resolveAndTranspile(depPath, absoluteUrl);
@@ -158,6 +159,7 @@
         })
       );
 
+      // 4) Reescreve os imports locais do código para apontarem para os Blobs gerados
       let transformedCode = sourceCode;
       for (const [originalPath, blobUrl] of dependencies.entries()) {
         const escapedPath = originalPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -165,6 +167,7 @@
         transformedCode = transformedCode.replace(re, `$1${blobUrl}$1`);
       }
 
+      // 5) Transpila TSX -> JS com Babel (React + TypeScript)
       const { code } = Babel.transform(transformedCode, {
         presets: [
           ['react', { runtime: 'automatic' }],
@@ -174,24 +177,28 @@
         filename: absoluteUrl
       });
 
-      const blobUrl = URL.createObjectURL(new Blob([code], { type: 'application/javascript' }));
+      // 6) Cria um Blob URL para esse módulo e guarda em cache
+      const blobUrl = URL.createObjectURL(
+        new Blob([code], { type: 'application/javascript' })
+      );
+
       blobCache.set(absoluteUrl, blobUrl);
       return blobUrl;
     }
 
     (async () => {
       try {
+        // INICIA A APLICAÇÃO PELO /index.tsx
         const entryModuleUrl = await resolveAndTranspile('/index.tsx');
         await import(entryModuleUrl);
       } catch (error) {
-        console.error('NYX SYSTEM CRASH:', error);
-        document.getElementById('root').innerHTML = `
-          <div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#050000;color:#ff1111;font-family:'Orbitron',monospace;letter-spacing:2px;">
-            <div class="text-center">
-              <h1 class="text-4xl mb-4 animate-pulse">NYX OFFLINE</h1>
-              <p class="text-lg">${error.message}</p>
-            </div>
-          </div>`;
+        console.error('Falha ao inicializar a aplicação:', error);
+        const rootEl = document.getElementById('root');
+        rootEl.innerHTML =
+          `<div style="color:#ff4444; background:#1a0000; padding:20px; font-family:monospace; margin: 20px; border: 1px solid #ff0000;">
+             <h2>System Error: Boot Sequence Failed</h2>
+             <p>${error.message}</p>
+           </div>`;
       }
     })();
   </script>
