@@ -1,126 +1,103 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0B071A" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Nyx Profile</title>
 
-  <!-- SEO -->
-  <title>fillshy - Autonomous AI Content Pipeline</title>
-  <meta name="description"
-        content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
-  <link rel="canonical" href="./" />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="./" />
-  <meta property="og:title" content="fillshy - Autonomous AI Content Pipeline" />
-  <meta property="og:description"
-        content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
-  <meta property="twitter:card" content="summary_large_image" />
-  <meta property="twitter:url" content="./" />
-  <meta property="twitter:title" content="fillshy - Autonomous AI Content Pipeline" />
-  <meta property="twitter:description"
-        content="Generate diverse content 24/7 with AI and save it directly to your GitHub repository." />
-
-  <!-- Fonts -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Sora:wght@600;700&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
 
-  <!-- Tailwind CDN (como você já usava) -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            heading: ['Sora', 'sans-serif'],
+            'robowapix': ['Robowapix', 'sans-serif'],
+            'orbitron': ['Orbitron', 'sans-serif'],
+            'rajdhani': ['Rajdhani', 'sans-serif'],
           },
-          keyframes: {
-            'reveal-word': {
-              from: { opacity: '0', transform: 'translateY(10px)' },
-              to:   { opacity: '1', transform: 'translateY(0)' },
-            },
-            'letter-reveal': {
-              '0%':   { opacity: 0, transform: 'translateY(20px) scale(0.8)' },
-              '100%': { opacity: 1, transform: 'translateY(0) scale(1)' },
-            },
-            'logo-bar-1': {
-              '0%':   { transform: 'translateY(-40px)', opacity: 0 },
-              '100%': { transform: 'translateY(0)', opacity: 1 },
-            },
-            'logo-bar-2': {
-              '0%':   { transform: 'translateY(40px)', opacity: 0 },
-              '100%': { transform: 'translateY(0)', opacity: 1 },
-            },
-            'blob-animation': {
-              '0%':   { transform: 'translate(0px, 0px) scale(1)' },
-              '33%':  { transform: 'translate(30px, -50px) scale(1.1)' },
-              '66%':  { transform: 'translate(-20px, 20px) scale(0.9)' },
-              '100%': { transform: 'translate(0px, 0px) scale(1)' },
-            },
-            'fade-in': {
-              from: { opacity: 0 },
-              to:   { opacity: 1 },
-            },
+          colors: {
+            'nyx-red': '#ff1111',
+            'nyx-black': '#050000',
           },
           animation: {
-            'reveal-word': 'reveal-word 0.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-            'letter-reveal': 'letter-reveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-            'logo-bar-1': 'logo-bar-1 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-            'logo-bar-2': 'logo-bar-2 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-            'blob': 'blob-animation 20s infinite ease-in-out',
-            'fade-in': 'fade-in 0.3s ease-in-out',
+            'spin-slow': 'spin 10s linear infinite',
           }
         }
-      },
-      plugins: [
-        function ({ addUtilities }) {
-          addUtilities({
-            '.scrollbar-hide': {
-              '-ms-overflow-style': 'none',
-              'scrollbar-width': 'none',
-              '&::-webkit-scrollbar': { display: 'none' }
-            }
-          })
-        }
-      ]
+      }
     }
   </script>
+
+  <!-- CSS Globais e Fontes Customizadas -->
+  <style>
+    @font-face {
+      font-family: 'Robowapix';
+      src: url('https://files.catbox.moe/wkl0bh.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden; /* Critical for game-like feel */
+      background-color: #050000;
+      color: white;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    * {
+      box-sizing: border-box;
+      cursor: none; /* Hide default cursor for custom one */
+    }
+    
+    /* Disable selection */
+    .no-select {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    
+    ::-webkit-scrollbar { width: 0px; } 
+  </style>
 
   <!-- Babel Standalone -->
   <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
 
-  <!-- Import map das libs -->
+  <!-- Import Map (Atualizado para ESM.SH que funciona em browser sem build) -->
   <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@18.2.0",
-    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-    "@google/genai": "https://esm.sh/@google/genai@0.14.0"
+  {
+    "imports": {
+      "react": "https://esm.sh/react@18.2.0",
+      "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+      "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+      "lucide-react": "https://esm.sh/lucide-react@0.454.0?external=react"
+    }
   }
-}
-</script>
+  </script>
 
-  <style>
-    html { overflow-y: auto; }
-  </style>
-
-  <!-- Pré-carrega o entry (ajuda um pouco no tempo total) -->
+  <!-- Pré-carrega o entry -->
   <link rel="preload" href="/index.tsx" as="fetch" crossorigin="anonymous" />
 </head>
-<body class="bg-[#0B071A] text-[#E0DDF0] font-sans">
+
+<body class="bg-nyx-black text-white font-rajdhani">
   <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
   <div id="root"></div>
 
+  <!-- SCRIPT COMPILADOR (O segredo do funcionamento) -->
   <script type="module">
+    // Polyfill para process.env (Muitas libs esperam isso)
+    globalThis.process = globalThis.process || { env: { NODE_ENV: 'production' } };
+
     const blobCache = new Map();
 
-    // Carrega o arquivo TS/TSX, tentando extensões padrão (.tsx, .ts, /index.tsx, /index.ts)
+    // 1. Carrega o arquivo TS/TSX
     async function loadSource(path, parentUrl) {
       const baseUrl = new URL(path, parentUrl).href;
 
@@ -131,6 +108,7 @@
         return { absoluteUrl: baseUrl, sourceCode: await res.text() };
       }
 
+      // Tenta variações de extensão
       const base = baseUrl.replace(/\/$/, '');
       const candidates = [
         base + '.tsx',
@@ -146,23 +124,24 @@
             return { absoluteUrl: url, sourceCode: await res.text() };
           }
         } catch (_) {
-          // ignora, tenta o próximo
+          // ignora
         }
       }
 
       throw new Error('Não foi possível encontrar o arquivo para ' + baseUrl);
     }
 
+    // 2. Resolve dependências, transpila e cria Blobs
     async function resolveAndTranspile(entryPath, parentUrl = window.location.href) {
-      // 1) Descobre o arquivo real (.tsx/.ts) e lê o código-fonte
+      // Lê o código fonte
       const { absoluteUrl, sourceCode } = await loadSource(entryPath, parentUrl);
 
-      // Cache por arquivo real (URL com extensão)
+      // Cache para não carregar o mesmo arquivo 2x
       if (blobCache.has(absoluteUrl)) {
         return blobCache.get(absoluteUrl);
       }
 
-      // 2) Descobre imports relativos (somente "import ... from '...';")
+      // Descobre imports relativos (começados com .)
       const importRegex = /\bimport\s+[^'"]*['"](.*?)['"]/g;
       const dependencies = new Map();
       let match;
@@ -173,7 +152,7 @@
         }
       }
 
-      // 3) Resolve recursivamente as dependências em paralelo
+      // Resolve dependências recursivamente
       await Promise.all(
         Array.from(dependencies.keys()).map(async (depPath) => {
           const childBlobUrl = await resolveAndTranspile(depPath, absoluteUrl);
@@ -181,14 +160,15 @@
         })
       );
 
-      // 4) Reescreve os imports locais para apontar para os blobs
+      // Reescreve os caminhos dos imports para os Blobs gerados
       let transformedCode = sourceCode;
       for (const [originalPath, blobUrl] of dependencies.entries()) {
-        const re = new RegExp(`(['"])${originalPath}\\1`, 'g');
+        const escapedPath = originalPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp(`(['"])${escapedPath}\\1`, 'g');
         transformedCode = transformedCode.replace(re, `$1${blobUrl}$1`);
       }
 
-      // 5) Transpila TSX -> JS com Babel (React + TypeScript)
+      // Babel Transform (TSX -> JS)
       const { code } = Babel.transform(transformedCode, {
         presets: [
           ['react', { runtime: 'automatic' }],
@@ -198,7 +178,7 @@
         filename: absoluteUrl
       });
 
-      // 6) Cria um Blob URL para esse módulo e guarda em cache
+      // Cria Blob URL
       const blobUrl = URL.createObjectURL(
         new Blob([code], { type: 'application/javascript' })
       );
@@ -207,17 +187,17 @@
       return blobUrl;
     }
 
+    // Inicialização
     (async () => {
       try {
-        // Entrada da app: ajuste aqui se seu entry não for /index.tsx
         const entryModuleUrl = await resolveAndTranspile('/index.tsx');
         await import(entryModuleUrl);
       } catch (error) {
         console.error('Falha ao inicializar a aplicação:', error);
         const rootEl = document.getElementById('root');
         rootEl.innerHTML =
-          `<div style="color:#ff8b8b; background:#2b0f0f; padding:20px; border-radius:8px; font-family:monospace; white-space:pre-wrap;">
-             <h2>Erro na Aplicação</h2>
+          `<div style="color:#ff1111; background:#050000; padding:20px; font-family:monospace; margin: 20px; border: 1px solid #ff1111;">
+             <h2 style="font-family:'Orbitron', sans-serif">SYSTEM ERROR</h2>
              <p>${error.message}</p>
            </div>`;
       }
